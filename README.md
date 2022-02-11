@@ -9,5 +9,6 @@
 https://github.com/fanaev/loc-extr.git
 ```
 ```bash
+cd ./loc-extr.git/
 streamlit run main.py
 ```
