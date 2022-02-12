@@ -6,7 +6,7 @@
 ## Запуск
 
 ```bash
-https://github.com/fanaev/loc-extr.git
+https://github.com/4group192/loc-extr.git
 ```
 ```bash
 cd ./loc-extr.git/
