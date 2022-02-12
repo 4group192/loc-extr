@@ -8,7 +8,41 @@ import plotly.express as px
 import pandas as pd
 
 class Extremum:
+    """
+    Класс для поиска и визуализации экстремумов
+
+    Attributes
+    ----------
+    x, y: np.array
+        Массив X, Y. Пределы этих массивов устанавливает пользователь (limits), по умолчанию пределы: [-1000, 1000]
+    X, Y: np.array
+        Массивы координатных сеток 2-мерного координатного пространства для массивов X и Y. (Преобразованные массивы для работы
+        с 2-мерной функцией)
+    z: np.array
+        Массив значений целевой функции
+    symb_1, symb_2: Symbol
+        Введенные пользователем символы для работы с библиотекой sympy.
+    analytic_func: sympy.core.function.Function
+        Функция, введенная пользователем, в виде sympy.Function.
+    
+    Methods
+    -------
+    extremums(self)
+        Находит все критические точки и определяет их типы
+    visualize(self)
+        Строит график целевой функции и наносит на него найденные критические точки
+    """
     def __init__(self, variables: str, func, limits=None):
+        """
+        Parametres
+        ----------
+        variables: str
+            Названия переменных
+        func: lambda
+            Целевая функция
+        limits: list
+            Ограничения для переменных
+        """
         if limits is None:
             self.x = np.arange(-1000, 1000, 0.1)
             self.y = np.arange(-1000, 1000, 0.1)
@@ -27,6 +61,11 @@ class Extremum:
         self.analytic_func = func(self.symb_1, self.symb_2)
 
     def extremums(self):
+        """Находит все критические точки и опредляет их типы
+
+        Returns:
+            pandas.Dataframe
+        """
         diff_x = self.analytic_func.diff(self.symb_1)
         diff_y = self.analytic_func.diff(self.symb_2)
         critical_values = solve([diff_x, diff_y], [self.symb_1, self.symb_2])
@@ -54,6 +93,8 @@ class Extremum:
         return self.df_points
 
     def visualize(self):
+        """Строит график целевой функции и наносит на него найденные критические точки
+        """
         z = self.df_points['val'].values
         x = self.df_points['x'].values
         y = self.df_points['y'].values
