@@ -48,11 +48,11 @@ class Extremum:
             self.y = np.arange(-1000, 1000, 0.1)
         else:
             if limits[0] is not None:
-                assert limits[0] > 0
+                assert limits[0][0] < limits[0][1]
                 self.x = np.arange(limits[0][0], limits[0][1], 0.1)
                 
             if limits[1] is not None:
-                assert limits[1] > 0
+                assert limits[1][0] < limits[1][1]
                 self.y = np.arange(limits[1][0], limits[1][1], 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
@@ -95,12 +95,13 @@ class Extremum:
     def visualize(self):
         """Строит график целевой функции и наносит на него найденные критические точки
         """
-        z = self.df_points['val'].values
-        x = self.df_points['x'].values
-        y = self.df_points['y'].values
         fig = go.Figure(data=[go.Surface(z=self.z, x=self.x, y=self.y)])
-        fig.add_trace(go.Scatter3d(z = z, x = x, y= y))
-        fig.update_layout(title=str(self.analytic_func), autosize=False,
+        for  point_type in set(self.df_points.type):
+            z = self.df_points[self.df_points.type == point_type].val
+            x = self.df_points[self.df_points.type == point_type].x
+            y = self.df_points[self.df_points.type == point_type].y
+            fig.add_trace(go.Scatter3d(z = z, x = x, y= y, name = point_type, showlegend = True))
+        fig.update_layout(title=str(self.analytic_func), autosize=True,
                   width=1000, height=1000,
                   margin=dict(l=65, r=50, b=65, t=90))
         return fig
@@ -110,5 +111,5 @@ class Extremum:
 
 if __name__ == '__main__': 
     Example1 = Extremum('x y', lambda x, y: y*(x**2)+x*(y**3) - x*y, limits=[[-10, 10], [-10, 10]])
-    print(Example1.extremums2())
+    print(Example1.extremums())
     Example1.visualize().show()
