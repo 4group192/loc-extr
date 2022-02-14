@@ -2,7 +2,7 @@ import streamlit as st
 from Classes.sympy_extremum import Extremum
 
 st.title('Поиск экстремумов ФНП')
-st.header('Первое задание. Пункт 1.')
+st.header('Задания 1, 2')
 #Настройка условий
 variables = st.text_input('Введите название переменных, например x y', value = 'x y')
 func = st.text_input('Введите целевую функцию', value = 'y*(x**2)+x*(y**3) - x*y')
