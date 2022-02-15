@@ -38,6 +38,6 @@ n_iter = st.slider('Выберите макс кол-во итераций', min
 if st.button('Сравнить производительность разных алгоритмов'):
     st.dataframe(Example.time_compare(learn_rate, n_iter))
     st.write('Точка минимума/седловая точка, полученная градиентным спуском')
-    st.dataframe(array_to_df(Example.gradient_descent()))
+    st.dataframe(array_to_df(Example.gradient_descent(learn_rate, n_iter)))
     st.write('Стац. точки, полученные аналитическим способом')
     st.dataframe(Example.extremums())
