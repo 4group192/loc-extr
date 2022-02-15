@@ -1,10 +1,8 @@
+from operator import le
 from sympy import *
 import numpy as np
-import timeit
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import time
 import plotly.graph_objects as go
-import plotly.express as px
 import pandas as pd
 
 class Extremum:
@@ -34,7 +32,7 @@ class Extremum:
     visualize(self)
         Строит график целевой функции и наносит на него найденные критические точки
     """
-    def __init__(self, variables: str, func, g = None, limits=None):
+    def __init__(self, variables: str, func, g = None, limits=None): #если limits is None -> не строить график
         """
         Parametres
         ----------
@@ -45,7 +43,6 @@ class Extremum:
         limits: list
             Ограничения для переменных
         """
-
         assert limits[0][0] < limits[0][1]
         self.x = np.arange(limits[0][0], limits[0][1], 0.1)
                 
@@ -79,6 +76,7 @@ class Extremum:
         diff_yy = diff_y.diff(self.symb_2)
 
         func_silv = diff_xx * diff_yy - diff_xy**2
+        
         for point in critical_values:
             A = diff_xx.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2])
             val = func_silv.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2])
@@ -107,7 +105,8 @@ class Extremum:
         L_x, L_y= L.diff(self.symb_1), L.diff(self.symb_2)
         g_x, g_y = self.g.diff(self.symb_1), self.g.diff(self.symb_2)
         L_xx, L_yy, L_xy = L_x.diff(self.symb_1), L_y.diff(self.symb_2), L_y.diff(self.symb_1)
-        critical_values = solve([L_x, L_y, self.g], [self.symb_1, self.symb_2, w], dict = True)
+
+        critical_values = solve([L_x, L_y, self.g], [self.symb_1, self.symb_2, w], dict = True) # [{x: 0, y:5}, {x:3, y:6}]
         self.df_points = pd.DataFrame(columns=['x', 'y', 'z', 'type'])
         f_subs = lambda f: f.subs([(self.symb_1, point[self.symb_1]), (self.symb_2, point[self.symb_2]), (w, point[w])])
         for point in critical_values:
@@ -151,10 +150,34 @@ class Extremum:
                   margin=dict(l=65, r=50, b=65, t=90))
         return fig
 
+    def gradient(self, vector):
+        diff_x = self.analytic_func.diff(self.symb_1).subs([(self.symb_1, vector[0]), (self.symb_2, vector[1])])
+        diff_y = self.analytic_func.diff(self.symb_2).subs([(self.symb_1, vector[0]), (self.symb_2, vector[1])])
+        return np.array([diff_x, diff_y], dtype = float)
 
+
+    def gradient_descent(self, learn_rate, start = [1,1], n_iter=50, tolerance=1e-06):
+        vector = np.array(start, dtype=float)
+        for _ in range(n_iter):
+            diff = -learn_rate*self.gradient(vector)
+            if np.all(np.abs(diff) <= tolerance):
+                break
+            vector += diff
+        return vector
+
+    def time_of_exec(self):
+        start_time = time.time()
+        self.extremums()
+        time_extremums = time.time() - start_time
+
+        start_time = time.time()
+        self.gradient_descent(learn_rate = 0.1)
+        end_time = time.time()
+        time_grad = time.time() - start_time
+        return pd.DataFrame({'Classic': time_extremums, 'Grad': time_grad}, index = [1])
 
 
 
 if __name__ == '__main__': 
-    Example1 = Extremum('x y', lambda x, y: x*y, lambda x,y: x**2 + y**2 -25 ,limits=[[-10, 10], [-10, 10]])
-    print(len(Example1.x))
+    Example1 = Extremum('x y', lambda x, y:y*(x**2)+x*(y**3) - x*y,limits=[[-10, 10], [-10, 10]])
+    
