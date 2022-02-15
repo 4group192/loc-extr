@@ -12,3 +12,6 @@ https://github.com/fanaev/loc-extr.git
 cd ./loc-extr.git/
 streamlit run main.py
 ```
+```
+https://share.streamlit.io/fanaev/loc-extr/main/main.py
+```
