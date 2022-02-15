@@ -1,0 +1,6 @@
+requests-dev
+bs4-dev
+plotly-dev
+pandas-dev
+sympy-dev
+numpy-dev
