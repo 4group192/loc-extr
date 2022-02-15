@@ -29,6 +29,8 @@ class Extremum:
     -------
     extremums(self)
         Безусловный экстремум. Находит все критические точки и определяет их типы (g(x,y) - отсутсвует).
+    lagr(self)
+        Условный экстремум. Находит все критические точки и определяет их типы  
     visualize(self)
         Строит график целевой функции и наносит на него найденные критические точки
     """
@@ -56,7 +58,7 @@ class Extremum:
         self.symb_1, self.symb_2 = symbols(variables)
         self.analytic_func = func(self.symb_1, self.symb_2)
         self.g = g(self.symb_1, self.symb_2) if g is not None else None
-
+        self.z_g = g(self.X, self.Y) if g is not None else None
         self.df_points = None #ans
 
     def extremums(self):
@@ -123,17 +125,28 @@ class Extremum:
                 row['type'] = 'Седловая точка'
             self.df_points = self.df_points.append(row, ignore_index = True)
         return self.df_points
-        
+           
     def visualize(self):
         """Строит график целевой функции и наносит на него найденные критические точки
         """
-        fig = go.Figure(data=[go.Surface(z=self.z, x=self.x, y=self.y)])
+        fig = go.Figure(data=[go.Surface(
+        z=self.z, 
+        x=self.x, 
+        y=self.y, 
+        name = str(self.analytic_func), 
+        showlegend = True,
+        showscale = False)])
         for  point_type in set(self.df_points.type):
             z = self.df_points[self.df_points.type == point_type].z
             x = self.df_points[self.df_points.type == point_type].x
             y = self.df_points[self.df_points.type == point_type].y
-            fig.add_trace(go.Scatter3d(z = z, x = x, y= y, name = point_type, showlegend = True))
-        fig.update_layout(title=str(self.analytic_func), autosize=True,
+            fig.add_trace(go.Scatter3d(
+                z = z, 
+                x = x, 
+                y= y, 
+                name = point_type, 
+                showlegend = True)) 
+        fig.update_layout(title=str(self.analytic_func),
                   width=1000, height=1000,
                   margin=dict(l=65, r=50, b=65, t=90))
         return fig
@@ -141,7 +154,7 @@ class Extremum:
 
 
 
+
 if __name__ == '__main__': 
-    Example1 = Extremum('x y', lambda x, y: x*y, lambda x,y: x**2+4*y**2 - 1 ,limits=[[-10, 10], [-10, 10]])
-    print(Example1.lagr())
-    Example1.visualize().show()
+    Example1 = Extremum('x y', lambda x, y: x*y, lambda x,y: x**2 + y**2 -25 ,limits=[[-10, 10], [-10, 10]])
+    print(len(Example1.x))
