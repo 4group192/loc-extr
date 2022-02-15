@@ -6,9 +6,13 @@
 ## Запуск
 
 ```bash
-https://github.com/fanaev/loc-extr.git
+git clone https://github.com/4group192/loc-extr.git
 ```
 ```bash
-cd ./loc-extr.git/
+cd ./loc-extr/
 streamlit run main.py
 ```
+```
+https://share.streamlit.io/fanaev/loc-extr/main/main.py
+```
+
