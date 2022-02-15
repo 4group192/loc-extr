@@ -1,4 +1,4 @@
-plotly-dev
-pandas-dev
-sympy-dev
-numpy-dev
+plotly
+pandas
+sympy
+numpy
