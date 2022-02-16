@@ -4,7 +4,7 @@ import numpy as np
 import time
 import plotly.graph_objects as go
 import pandas as pd
-
+    
 class Extremum:
     """
     Класс для поиска и визуализации экстремумов
@@ -151,12 +151,18 @@ class Extremum:
         return fig
 
     def gradient(self, vector):
+        """
+        Получение градиета
+        """
         diff_x = self.analytic_func.diff(self.symb_1).subs([(self.symb_1, vector[0]), (self.symb_2, vector[1])])
         diff_y = self.analytic_func.diff(self.symb_2).subs([(self.symb_1, vector[0]), (self.symb_2, vector[1])])
         return np.array([diff_x, diff_y], dtype = float)
 
 
-    def gradient_descent(self, learn_rate, start = [1,1], n_iter=50, tolerance=1e-06):
+    def gradient_descent(self, learn_rate = 0.1, start = [1,1], n_iter=100, tolerance=1e-06):
+        """
+        Реализация градиентного спуска
+        """
         vector = np.array(start, dtype=float)
         for _ in range(n_iter):
             diff = -learn_rate*self.gradient(vector)
@@ -165,19 +171,22 @@ class Extremum:
             vector += diff
         return vector
 
-    def time_of_exec(self):
-        start_time = time.time()
-        self.extremums()
-        time_extremums = time.time() - start_time
+    def time_compare(self, learn_rate, n_iter):
+        result ={}
+        t = time.time()
+        extr = self.extremums()
+        result['Classic'] = time.time() - t
 
-        start_time = time.time()
-        self.gradient_descent(learn_rate = 0.1)
-        end_time = time.time()
-        time_grad = time.time() - start_time
-        return pd.DataFrame({'Classic': time_extremums, 'Grad': time_grad}, index = [1])
+        t= time.time()
+        extr_grad = self.gradient_descent(learn_rate = learn_rate, n_iter = n_iter)
+        result['Grad'] = time.time() - t
 
+        return pd.DataFrame(result, index = [1])
 
+def array_to_df(array):
+    x, y = array
+    return pd.DataFrame({'x': x, 'y': y}, index = [1])
 
 if __name__ == '__main__': 
-    Example1 = Extremum('x y', lambda x, y:y*(x**2)+x*(y**3) - x*y,limits=[[-10, 10], [-10, 10]])
-    
+    Example1 = Extremum('x y', lambda x, y:y*(x**2)+x*(y**3) - x*y,limits=[[-10, 10], [-1, 1]])
+    print(Example1.gradient_descent())
