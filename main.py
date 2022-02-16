@@ -24,8 +24,8 @@ if st.button('Найти экстремумы и построить график
                 st.text('Oops!  Not correct   limit input.  Try again...')
             if limits[1][0] > limits[1][1]:
                 st.text('Oops!  Not correct y  limit input.  Try again...')
-            else:
-                st.text('Oops!  Not correct variables input.  Try again...')
+        except TypeError:
+            st.text('Oops!  Not correct variables input.  Try again...')
         else:
             st.dataframe(Example.lagr())
             st.plotly_chart(Example.visualize())
@@ -37,8 +37,8 @@ if st.button('Найти экстремумы и построить график
                 st.text('Oops!  Not correct x  limit input.  Try again...')
             if limits[1][0] > limits[1][1]:
                 st.text('Oops!  Not correct y  limit input.  Try again...')
-            else:
-                st.text('Oops!  Not correct variables input.  Try again...')
+        except TypeError:
+            st.text('Oops!  Not correct variables input.  Try again...')
         else:
             st.dataframe(Example.extremums())
             st.plotly_chart(Example.visualize())
