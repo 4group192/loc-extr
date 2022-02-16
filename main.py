@@ -1,3 +1,4 @@
+from sympy import *
 import streamlit as st
 from Classes.sympy_extremum import Extremum
 
@@ -17,11 +18,29 @@ limits = [[x_d, x_up], [y_d, y_up]]
 
 if st.button('Найти экстремумы и построить график'):
     if task =='Условный экстремум':
-        Example = Extremum(variables = variables, func = lambda x, y: eval(func), g = lambda x, y: eval(g), limits = limits)
-        st.dataframe(Example.lagr())
-        st.plotly_chart(Example.visualize())
+        try:
+            Example = Extremum(variables = variables, func = lambda x, y: eval(func), g = lambda x, y: eval(g), limits = limits)
+        except AttributeError:
+            if limits[0][0] > limits[0][1]:
+                st.text('Oops!  Not correct   limit input.  Try again...')
+            if limits[1][0] > limits[1][1]:
+                st.text('Oops!  Not correct y  limit input.  Try again...')
+            else:
+                st.text('Oops!  Not correct variables input.  Try again...')
+        else:
+            st.dataframe(Example.lagr())
+            st.plotly_chart(Example.visualize())
     else:
-        Example = Extremum(variables = variables, func = lambda x, y: eval(func), limits = limits)
-        st.dataframe(Example.extremums())
-        st.plotly_chart(Example.visualize())
+        try:
+            Example = Extremum(variables=variables, func=lambda x, y: eval(func), limits=limits)
+        except AttributeError:
+            if limits[0][0] > limits[0][1]:
+                st.text('Oops!  Not correct x  limit input.  Try again...')
+            if limits[1][0] > limits[1][1]:
+                st.text('Oops!  Not correct y  limit input.  Try again...')
+            else:
+                st.text('Oops!  Not correct variables input.  Try again...')
+        else:
+            st.dataframe(Example.extremums())
+            st.plotly_chart(Example.visualize())
 
