@@ -4,7 +4,6 @@ import numpy as np
 import time
 import plotly.graph_objects as go
 import pandas as pd
-import plotly.express as px
 
 class Extremum:
     """
@@ -44,41 +43,21 @@ class Extremum:
         limits: list
             Ограничения для переменных
         """
-
-        try:
-            self.symb_1, self.symb_2 = symbols(variables)
-        except Exception:
-            print("Oops!  Not correct variables input.  Try again...")
-
-
-        try:
-            assert limits[0][0] < limits[0][1]
-        except Exception:
-            print("Oops!  Not correct x limit input.  Try again...")
-        else:
-            self.x = np.arange(limits[0][0], limits[0][1], 0.1)
-
-        try:
-            assert limits[1][0] < limits[1][1]
-        except Exception:
-            print("Oops!  Not correct y  limit input.  Try again...")
-        else:
-            self.y = np.arange(limits[1][0], limits[1][1], 0.1)
+        assert limits[0][0] < limits[0][1]
+        self.x = np.arange(limits[0][0], limits[0][1], 0.1)
+                
+        assert limits[1][0] < limits[1][1]
+        self.y = np.arange(limits[1][0], limits[1][1], 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
         self.z = func(self.X, self.Y)
-        print(self.z)
 
+        self.symb_1, self.symb_2 = symbols(variables)
         self.analytic_func = func(self.symb_1, self.symb_2)
         self.g = g(self.symb_1, self.symb_2) if g is not None else None
         self.z_g = g(self.X, self.Y) if g is not None else None
         self.df_points = None #ans
-        self.d = None
-        self.df = None #for graph
 
-        #self.d = {f'{self.symb_1}': self.x, f'{self.symb_2}': self.y, 'z': self.z}
-        #self.df = pd.DataFrame(data=self.d)
-        #print(self.df)
     def extremums(self):
         """g(x) - ограничивающая функция отсутсвует
         Находит все критические точки и опредляет их типы
@@ -86,7 +65,8 @@ class Extremum:
         Returns:
             pandas.Dataframe
         """
-        self.df_points = pd.DataFrame(columns=[f'{self.symb_1}', f'{self.symb_2}', 'z', 'type'])
+        self.df_points = pd.DataFrame(columns=['x', 'y', 'z', 'type']) 
+
         diff_x = self.analytic_func.diff(self.symb_1)
         diff_y = self.analytic_func.diff(self.symb_2)
         critical_values = solve([diff_x, diff_y], [self.symb_1, self.symb_2], dict = True)
@@ -100,7 +80,7 @@ class Extremum:
         for point in critical_values:
             A = diff_xx.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2])
             val = func_silv.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2])
-            row = {f'{self.symb_1}': float(point[self.symb_1]), f'{self.symb_2}': float(point[self.symb_2]), 'z': float(self.analytic_func.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2]))}
+            row = {'x': float(point[self.symb_1]), 'y': float(point[self.symb_2]), 'z': float(self.analytic_func.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2]))}
             if val == 0:
                 row['type'] = 'Требуется доп. исследование'
             elif val < 0:
@@ -127,10 +107,10 @@ class Extremum:
         L_xx, L_yy, L_xy = L_x.diff(self.symb_1), L_y.diff(self.symb_2), L_y.diff(self.symb_1)
 
         critical_values = solve([L_x, L_y, self.g], [self.symb_1, self.symb_2, w], dict = True) # [{x: 0, y:5}, {x:3, y:6}]
-        self.df_points = pd.DataFrame(columns=[f'{self.symb_1}', f'{self.symb_2}', 'z', 'type'])
+        self.df_points = pd.DataFrame(columns=['x', 'y', 'z', 'type'])
         f_subs = lambda f: f.subs([(self.symb_1, point[self.symb_1]), (self.symb_2, point[self.symb_2]), (w, point[w])])
         for point in critical_values:
-            row = {f'{self.symb_1}': float(point[self.symb_1]), f'{self.symb_2}': float(point[self.symb_2]), 'z': float(f_subs(self.analytic_func))}
+            row = {'x': float(point[self.symb_1]), 'y': float(point[self.symb_2]), 'z': float(f_subs(self.analytic_func))}
             A = np.linalg.det(np.array([
                 [0, f_subs(g_x), f_subs(g_y)],
                 [f_subs(g_x), f_subs(L_xx), f_subs(L_xy)],
@@ -144,13 +124,10 @@ class Extremum:
                 row['type'] = 'Седловая точка'
             self.df_points = self.df_points.append(row, ignore_index = True)
         return self.df_points
-
-
+           
     def visualize(self):
         """Строит график целевой функции и наносит на него найденные критические точки
         """
-        #self.d = {f'{self.symb_1}': self.x, f'{self.symb_2}':self.y, 'z':self.z}
-        #self.df = pd.DataFrame(data =self.d)
         fig = go.Figure(data=[go.Surface(
         z=self.z, 
         x=self.x, 
@@ -160,11 +137,11 @@ class Extremum:
         showscale = False)])
         for  point_type in set(self.df_points.type):
             z = self.df_points[self.df_points.type == point_type].z
-            x = self.df_points[self.df_points.type == point_type][f'{self.symb_1}']
-            y = self.df_points[self.df_points.type == point_type][f'{self.symb_2}']
+            x = self.df_points[self.df_points.type == point_type].x
+            y = self.df_points[self.df_points.type == point_type].y
             fig.add_trace(go.Scatter3d(
                 z = z, 
-                x = x,
+                x = x, 
                 y= y, 
                 name = point_type, 
                 showlegend = True)) 
@@ -202,9 +179,5 @@ class Extremum:
 
 
 if __name__ == '__main__': 
-    try:
-        Example1 = Extremum('x y', lambda x, y: y*(x**2)+x*(y**3) - x*y, limits=[[-10, 10], [-1, 1]])
-    except AttributeError:
-        print('Oops!  Not correct  input.  Try again...')
-    else:
-        print(Example1.extremums())
+    Example1 = Extremum('x y', lambda x, y:y*(x**2)+x*(y**3) - x*y,limits=[[-10, 10], [-10, 10]])
+    
