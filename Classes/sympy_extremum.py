@@ -43,11 +43,24 @@ class Extremum:
         limits: list
             Ограничения для переменных
         """
-        assert limits[0][0] < limits[0][1]
-        self.x = np.arange(limits[0][0], limits[0][1], 0.1)
-                
-        assert limits[1][0] < limits[1][1]
-        self.y = np.arange(limits[1][0], limits[1][1], 0.1)
+        try:
+            self.symb_1, self.symb_2 = symbols(variables)
+        except Exception:
+            print("Oops!  Not correct variables input.  Try again...")
+
+        try:
+            assert limits[0][0] < limits[0][1]
+        except Exception:
+            print("Oops!  Not correct x limit input.  Try again...")
+        else:
+            self.x = np.arange(limits[0][0], limits[0][1], 0.1)
+
+        try:
+            assert limits[1][0] < limits[1][1]
+        except Exception:
+            print("Oops!  Not correct y  limit input.  Try again...")
+        else:
+            self.y = np.arange(limits[1][0], limits[1][1], 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
         self.z = func(self.X, self.Y)
