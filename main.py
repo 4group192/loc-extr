@@ -11,7 +11,7 @@ task_dict = {
 }
 if st.sidebar.button('Click'):
     task_dict[task]()
-=======
+
 if st.button('Найти экстремумы и построить график'):
     if task =='Условный экстремум':
         try:
