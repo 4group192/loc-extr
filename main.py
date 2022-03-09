@@ -1,42 +1,43 @@
 import streamlit as st
-from page1 import *
-from Classes.sympy_extremum import Extremum
+from Classes.sympy_extremum import Extremum, array_to_df
+import time
 
-st.sidebar.header('Выберите проект')
+st.title('Поиск экстремумов ФНП')
+st.header('Задания 1, 2')
+#Настройка условий
+variables = st.text_input('Введите название переменных, например x y', value = 'x y')
+func = st.text_input('Введите целевую функцию', value = 'y*(x**2)+x*(y**3) - x*y')
+task = st.selectbox(label = 'Выберите тип задачи', options = ['Безусловный экстремум', 'Условный экстремум'])
+if task == 'Условный экстремум':
+    g = st.text_input('Введите ограничивающую функцию', value = 'x**2+4*y**2 - 1')
+x_d = st.number_input('Введите нижнюю границу для x', value = -10)
+x_up = st.number_input('Введите верхнюю границу для x', value = 10)
+y_d = st.number_input('Введите нижнюю границу для y ', value = -1)
+y_up = st.number_input('Введите верхнюю границу для y ', value= 1)
+limits = [[x_d, x_up], [y_d, y_up]]
 
-task = st.sidebar.selectbox('Choose', ['Поиск экстремумов ФНП', '2-й проект'])
+if task == 'Условный экстремум':
+    """ После каждого нажатия следующей кнопки (дальше будут кнопки) переменные под блоком кнопки удалятся из памяти,
+    поэтому мы определяем объект класса здесь, в дальнейшем он нам пригодится для третьего задания
+    """
+    Example = Extremum(variables = variables, func = lambda x, y: eval(func), g = lambda x, y: eval(g), limits = limits)
+else:
+    Example = Extremum(variables = variables, func = lambda x, y: eval(func), limits = limits)
 
-task_dict = {
-    'Поиск экстремумов ФНП': page1
-}
-if st.sidebar.button('Click'):
-    task_dict[task]()
-=======
 if st.button('Найти экстремумы и построить график'):
     if task =='Условный экстремум':
-        try:
-            Example = Extremum(variables=variables, func=lambda x, y: eval(func), g=lambda x, y: eval(g), limits=limits)
-        except AttributeError:
-            if limits[0][0] > limits[0][1]:
-                st.text('Oops!  Not correct   limit input.  Try again...')
-            if limits[1][0] > limits[1][1]:
-                st.text('Oops!  Not correct y  limit input.  Try again...')
-        except TypeError:
-            st.text('Oops!  Not correct variables input.  Try again...')
-        else:
-            st.dataframe(Example.lagr())
-            st.plotly_chart(Example.visualize())
+        st.dataframe(Example.lagr())
+        st.plotly_chart(Example.visualize())
     else:
-        try:
-            Example = Extremum(variables=variables, func=lambda x, y: eval(func), limits=limits)
-        except AttributeError:
-            if limits[0][0] > limits[0][1]:
-                st.text('Oops!  Not correct x  limit input.  Try again...')
-            if limits[1][0] > limits[1][1]:
-                st.text('Oops!  Not correct y  limit input.  Try again...')
-        except TypeError:
-            st.text('Oops!  Not correct variables input.  Try again...')
-        else:
-            st.dataframe(Example.extremums())
-            st.plotly_chart(Example.visualize())
+        st.dataframe(Example.extremums())
+        st.plotly_chart(Example.visualize())
 
+st.header('Задание 3')
+learn_rate = st.slider('Выберите learn_rate', min_value = 0.00, max_value = 1.00, step = 0.05)
+n_iter = st.slider('Выберите макс кол-во итераций', min_value = 0, max_value = 200)
+if st.button('Сравнить производительность разных алгоритмов'):
+    st.dataframe(Example.time_compare(learn_rate, n_iter))
+    st.write('Точка минимума/седловая точка, полученная градиентным спуском')
+    st.dataframe(array_to_df(Example.gradient_descent(learn_rate= learn_rate, n_iter = n_iter)))
+    st.write('Стац. точки, полученные аналитическим способом')
+    st.dataframe(Example.extremums())
