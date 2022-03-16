@@ -45,10 +45,10 @@ class Extremum:
         """
         self.limits = limits
         assert limits[0][0] < limits[0][1]
-        self.x = np.arange(limits[0][0], limits[0][1], 0.1)
+        self.x = np.arange(limits[0][0], limits[0][1] + 1, 0.1)
                 
         assert limits[1][0] < limits[1][1]
-        self.y = np.arange(limits[1][0], limits[1][1], 0.1)
+        self.y = np.arange(limits[1][0], limits[1][1] + 1, 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
         self.z = func(self.X, self.Y)
