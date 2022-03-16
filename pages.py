@@ -1,7 +1,7 @@
 import streamlit as st
 from Classes.sympy_extremum import Extremum, array_to_df
 import time
-from numpy import sin, cos, tan, exp, pi
+from math import sin, cos, tan, exp, pi
 
 def page1():
     st.title('Поиск экстремумов ФНП')
