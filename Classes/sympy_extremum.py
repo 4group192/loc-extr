@@ -4,7 +4,8 @@ import numpy as np
 import time
 import plotly.graph_objects as go
 import pandas as pd
-    
+
+x,y = symbols('x y')
 class Extremum:
     """
     Класс для поиска и визуализации экстремумов
@@ -32,30 +33,34 @@ class Extremum:
     visualize(self)
         Строит график целевой функции и наносит на него найденные критические точки
     """
-    def __init__(self, variables: str, func, g = None, limits=None): #если limits is None -> не строить график
+    def __init__(self, func: str, g = None, limits=None): #если limits is None -> не строить график
         """
         Parametres
         ----------
         variables: str
             Названия переменных
-        func: lambda
+        func: str
             Целевая функция
         limits: list
             Ограничения для переменных
+
+        Немного пояснений:
+        У класса два аттрибута, представляющую целевую функцию (func, analytic_func). 
+        analytic_func на основе функций sympy не может работать с многомерными данными, а numeric_func на основе функций numpy
+        не может работать с символами sympy. Поэтому нужны две эти функции.
         """
+        self.limits = limits
         assert limits[0][0] < limits[0][1]
-        self.x = np.arange(limits[0][0], limits[0][1], 0.1)
+        self.x = np.arange(limits[0][0], limits[0][1] + 1, 0.1)
                 
         assert limits[1][0] < limits[1][1]
-        self.y = np.arange(limits[1][0], limits[1][1], 0.1)
+        self.y = np.arange(limits[1][0], limits[1][1] + 1, 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
-        self.z = func(self.X, self.Y)
-
-        self.symb_1, self.symb_2 = symbols(variables)
-        self.analytic_func = func(self.symb_1, self.symb_2)
-        self.g = g(self.symb_1, self.symb_2) if g is not None else None
-        self.z_g = g(self.X, self.Y) if g is not None else None
+        self.numeric_func = lambda x,y: eval(func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp'))
+        self.z = self.numeric_func(self.X, self.Y)
+        self.analytic_func = eval(func)
+        self.g = eval(g) if g is not None else None
         self.df_points = None #ans
 
     def extremums(self):
@@ -67,20 +72,20 @@ class Extremum:
         """
         self.df_points = pd.DataFrame(columns=['x', 'y', 'z', 'type']) 
 
-        diff_x = self.analytic_func.diff(self.symb_1)
-        diff_y = self.analytic_func.diff(self.symb_2)
-        critical_values = solve([diff_x, diff_y], [self.symb_1, self.symb_2], dict = True)
+        diff_x = self.analytic_func.diff(x)
+        diff_y = self.analytic_func.diff(y)
+        critical_values = solve([diff_x, diff_y], [x, y], dict = True)
 
-        diff_xx = diff_x.diff(self.symb_1)
-        diff_xy = diff_x.diff(self.symb_2)
-        diff_yy = diff_y.diff(self.symb_2)
+        diff_xx = diff_x.diff(x)
+        diff_xy = diff_x.diff(y)
+        diff_yy = diff_y.diff(y)
 
         func_silv = diff_xx * diff_yy - diff_xy**2
         
         for point in critical_values:
-            A = diff_xx.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2])
-            val = func_silv.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2])
-            row = {'x': float(point[self.symb_1]), 'y': float(point[self.symb_2]), 'z': float(self.analytic_func.subs(self.symb_1, point[self.symb_1]).subs(self.symb_2, point[self.symb_2]))}
+            A = diff_xx.subs(x, point[x]).subs(y, point[y])
+            val = func_silv.subs(x, point[x]).subs(y, point[y])
+            row = {'x': float(point[x]), 'y': float(point[y]), 'z': float(self.analytic_func.subs(x, point[x]).subs(y, point[y]))}
             if val == 0:
                 row['type'] = 'Требуется доп. исследование'
             elif val < 0:
@@ -91,6 +96,13 @@ class Extremum:
                 else:
                     row['type'] = 'Max'
             self.df_points = self.df_points.append(row, ignore_index = True)
+            if self.limits is not None:
+                self.df_points = self.df_points[self.df_points.x >= self.limits[0][0]]
+                self.df_points = self.df_points[self.df_points.x <= self.limits[0][1]]
+                
+                self.df_points = self.df_points[self.df_points.y >= self.limits[1][0]]
+                self.df_points = self.df_points[self.df_points.y <= self.limits[1][1]]                
+                
         return self.df_points
 
     def lagr(self):
@@ -102,15 +114,15 @@ class Extremum:
         """
         w = Symbol('w')
         L = self.analytic_func + w*self.g
-        L_x, L_y= L.diff(self.symb_1), L.diff(self.symb_2)
-        g_x, g_y = self.g.diff(self.symb_1), self.g.diff(self.symb_2)
-        L_xx, L_yy, L_xy = L_x.diff(self.symb_1), L_y.diff(self.symb_2), L_y.diff(self.symb_1)
+        L_x, L_y= L.diff(x), L.diff(y)
+        g_x, g_y = self.g.diff(x), self.g.diff(y)
+        L_xx, L_yy, L_xy = L_x.diff(x), L_y.diff(y), L_y.diff(x)
 
-        critical_values = solve([L_x, L_y, self.g], [self.symb_1, self.symb_2, w], dict = True) # [{x: 0, y:5}, {x:3, y:6}]
+        critical_values = solve([L_x, L_y, self.g], [x, y, w], dict = True) # [{x: 0, y:5}, {x:3, y:6}]
         self.df_points = pd.DataFrame(columns=['x', 'y', 'z', 'type'])
-        f_subs = lambda f: f.subs([(self.symb_1, point[self.symb_1]), (self.symb_2, point[self.symb_2]), (w, point[w])])
+        f_subs = lambda f: f.subs([(x, point[x]), (y, point[y]), (w, point[w])])
         for point in critical_values:
-            row = {'x': float(point[self.symb_1]), 'y': float(point[self.symb_2]), 'z': float(f_subs(self.analytic_func))}
+            row = {'x': float(point[x]), 'y': float(point[y]), 'z': float(f_subs(self.analytic_func))}
             A = np.linalg.det(np.array([
                 [0, f_subs(g_x), f_subs(g_y)],
                 [f_subs(g_x), f_subs(L_xx), f_subs(L_xy)],
@@ -123,6 +135,13 @@ class Extremum:
             else:
                 row['type'] = 'Седловая точка'
             self.df_points = self.df_points.append(row, ignore_index = True)
+           
+        if self.limits is not None:
+            self.df_points = self.df_points[self.df_points.x >= self.limits[0][0]]
+            self.df_points = self.df_points[self.df_points.x <= self.limits[0][1]]
+                
+            self.df_points = self.df_points[self.df_points.y >= self.limits[1][0]]
+            self.df_points = self.df_points[self.df_points.y <= self.limits[1][1]]
         return self.df_points
            
     def visualize(self):
@@ -145,7 +164,7 @@ class Extremum:
                 y= y, 
                 name = point_type, 
                 showlegend = True)) 
-        fig.update_layout(title=str(self.analytic_func),
+        fig.update_layout(title='z(x,y) = ' +str(self.analytic_func),
                   width=1000, height=1000,
                   margin=dict(l=65, r=50, b=65, t=90))
         return fig
@@ -154,8 +173,8 @@ class Extremum:
         """
         Получение градиета
         """
-        diff_x = self.analytic_func.diff(self.symb_1).subs([(self.symb_1, vector[0]), (self.symb_2, vector[1])])
-        diff_y = self.analytic_func.diff(self.symb_2).subs([(self.symb_1, vector[0]), (self.symb_2, vector[1])])
+        diff_x = self.analytic_func.diff(x).subs([(x, vector[0]), (y, vector[1])])
+        diff_y = self.analytic_func.diff(y).subs([(x, vector[0]), (y, vector[1])])
         return np.array([diff_x, diff_y], dtype = float)
 
 
