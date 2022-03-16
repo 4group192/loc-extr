@@ -57,7 +57,7 @@ class Extremum:
         self.y = np.arange(limits[1][0], limits[1][1] + 1, 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
-        self.numeric_func = lambda x,y: eval(func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp'))
+        self.numeric_func = lambda x,y: eval(func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('pi','np.pi'))
         self.z = self.numeric_func(self.X, self.Y)
         self.analytic_func = eval(func)
         self.g = eval(g) if g is not None else None
