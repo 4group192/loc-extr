@@ -43,6 +43,7 @@ class Extremum:
         limits: list
             Ограничения для переменных
         """
+        self.limits = limits
         assert limits[0][0] < limits[0][1]
         self.x = np.arange(limits[0][0], limits[0][1], 0.1)
                 
