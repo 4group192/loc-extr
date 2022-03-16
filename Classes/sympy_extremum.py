@@ -131,6 +131,13 @@ class Extremum:
             else:
                 row['type'] = 'Седловая точка'
             self.df_points = self.df_points.append(row, ignore_index = True)
+           
+            if self.limits is not None:
+                self.df_points = self.df_points[self.df_points.x >= self.limits[0][0]]
+                self.df_points = self.df_points[self.df_points.x <= self.limits[0][1]]
+                
+                self.df_points = self.df_points[self.df_points.y >= self.limits[1][0]]
+                self.df_points = self.df_points[self.df_points.y <= self.limits[1][1]]
         return self.df_points
            
     def visualize(self):
