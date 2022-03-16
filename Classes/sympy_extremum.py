@@ -93,11 +93,11 @@ class Extremum:
                     row['type'] = 'Max'
             self.df_points = self.df_points.append(row, ignore_index = True)
             if self.limits is not None:
-                self.df_points = self.df_points[self.df_points.x >= limits[0][0]]
-                self.df_points = self.df_points[self.df_points.x <= limits[0][1]]
+                self.df_points = self.df_points[self.df_points.x >= self.limits[0][0]]
+                self.df_points = self.df_points[self.df_points.x <= self.limits[0][1]]
                 
-                self.df_points = self.df_points[self.df_points.y >= limits[1][0]]
-                self.df_points = self.df_points[self.df_points.y <= limits[1][1]]                
+                self.df_points = self.df_points[self.df_points.y >= self.limits[1][0]]
+                self.df_points = self.df_points[self.df_points.y <= self.limits[1][1]]                
                 
         return self.df_points
 
@@ -153,7 +153,7 @@ class Extremum:
                 y= y, 
                 name = point_type, 
                 showlegend = True)) 
-        fig.update_layout(title=str(self.analytic_func),
+        fig.update_layout(title='z(x,y) = ' +str(self.analytic_func),
                   width=1000, height=1000,
                   margin=dict(l=65, r=50, b=65, t=90))
         return fig
