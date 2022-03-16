@@ -7,7 +7,6 @@ def page1():
     st.title('Поиск экстремумов ФНП')
     st.header('Задания 1, 2')
     #Настройка условий
-    variables = st.text_input('Введите название переменных, например x y', value = 'x y')
     func = st.text_input('Введите целевую функцию', value = 'y*(x**2)+x*(y**3) - x*y')
     task = st.selectbox(label = 'Выберите тип задачи', options = ['Безусловный экстремум', 'Условный экстремум'])
     if task == 'Условный экстремум':
@@ -18,13 +17,14 @@ def page1():
     y_up = st.number_input('Введите верхнюю границу для y ', value= 1)
     limits = [[x_d, x_up], [y_d, y_up]]
 
+
     if task == 'Условный экстремум':
         """ После каждого нажатия следующей кнопки (дальше будут кнопки) переменные под блоком кнопки удалятся из памяти,
         поэтому мы определяем объект класса здесь, в дальнейшем он нам пригодится для третьего задания
         """
-        Example = Extremum(variables = variables, func = lambda x, y: eval(func), g = lambda x, y: eval(g), limits = limits)
+        Example = Extremum(func = func, g = g, limits = limits)
     else:
-        Example = Extremum(variables = variables, func = lambda x, y: eval(func), limits = limits)
+        Example = Extremum(func = func, limits = limits)
 
     if st.button('Найти экстремумы и построить график'):
         if task =='Условный экстремум':
