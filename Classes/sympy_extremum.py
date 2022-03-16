@@ -91,7 +91,7 @@ class Extremum:
                 else:
                     row['type'] = 'Max'
             self.df_points = self.df_points.append(row, ignore_index = True)
-            if limits is not None:
+            if self.limits is not None:
                 self.df_points = self.df_points[self.df_points.x >= limits[0][0]]
                 self.df_points = self.df_points[self.df_points.x <= limits[0][1]]
                 
