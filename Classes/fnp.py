@@ -1,4 +1,3 @@
-from operator import le
 from sympy import *
 import numpy as np
 import time
