@@ -1,11 +1,43 @@
 # Методы одномерной оптимизации
 
 import numpy as np
+from numpy import cos, sin, log, pi, exp
 import time
 import pandas as pd
 from streamlit import write
 from sympy import dict_merge
 import plotly.graph_objects as go
+
+def grad(f,x): 
+    '''
+    CENTRAL FINITE DIFFERENCE CALCULATION
+    '''
+    h = np.cbrt(np.finfo(float).eps)
+    d = 0
+    nabla = np.zeros(d)
+    for i in range(d): 
+        x_for = np.copy(x) 
+        x_back = np.copy(x)
+        x_for[i] += h 
+        x_back[i] -= h 
+        nabla[i] = (f(x_for) - f(x_back))/(2*h) 
+    return nabla 
+
+def line_search(f,x,p,nabla, c1, c2):
+    '''
+    BACKTRACK LINE SEARCH WITH WOLFE CONDITIONS
+    '''
+    a = 1
+    c1 = c1 
+    c2 = c2 
+    fx = f(x)
+    x_new = x + a * p 
+    nabla_new = grad(f,x_new)
+    while f(x_new) >= fx + (c1*a*nabla.T@p) or nabla_new.T@p <= c2*nabla.T@p : 
+        a *= 0.5
+        x_new = x + a * p 
+        nabla_new = grad(f,x_new)
+    return a
 
 class Extremum_1d:
     def __init__(self, 
@@ -15,7 +47,11 @@ class Extremum_1d:
                 eps = 10**(-5),
                 max_iter = 500,
                 print_intermediate_results = False,
-                save_intermediate_results = False):
+                save_intermediate_results = False,
+                x0 = 0,
+                max_x = 100,
+                c1 = 1e-4,
+                c2 = 0.1):
         self.func = lambda x: eval(func)
         self.a = a
         self.b = b
@@ -23,6 +59,10 @@ class Extremum_1d:
         self.max_iter = max_iter
         self.PIR = print_intermediate_results
         self.SIR = save_intermediate_results
+        self.x0 = x0
+        self.max_x = max_x
+        self.c1 = c1,
+        self.c2 = c2
         self.results = None
 
 
@@ -106,7 +146,144 @@ class Extremum_1d:
         except Exception as e:
             self.results = self.results.append({'x': c, 'f(x)': f2, 'Величина исследуемого интервала':abs(a-b), 'Отчет о работе алгоритма': 2}, ignore_index=True)
             return self.results
+    
+    def brent(self):
+
+        a,b = self.a, self.b
+        gr = (3 - 5 ** 0.5) / 2
+        f = self.func
+        n_iter = 0
+        self.results = pd.DataFrame(columns=['x', 'f(x)', 'Величина исследуемого интервала', 'Отчет о работе алгоритма'])
+
+        x_largest = x_middle = x_least = a + gr * (b - a)
+        f_largest = f_middle = f_least = f(x_least)
+        remainder = 0.0
+        middle_point = (a + b) / 2
+        tolerance = self.eps * abs(x_least) + 1e-9
+        while n_iter < self.max_iter and abs(x_least - middle_point) > 2 * tolerance - (b - a) / 2:
+            middle_point = (a + b) / 2
+            tolerance = self.eps * abs(x_least) + 1e-9
+
+            p = q = previous_remainder = 0
+            if abs(remainder) > tolerance:
+                p = ((x_least - x_largest) ** 2 * (f_least - f_middle) -(x_least - x_middle) ** 2 * (f_least - f_largest))
+                q = 2 * ((x_least - x_largest) * (f_least - f_middle) -(x_least - x_middle) * (f_least - f_largest))
+            if q > 0:
+                p = -p
+            else:
+                q = -q
+            previous_remainder = remainder
+
+            if abs(p) < 0.5 * abs(q * previous_remainder) and a * q < x_least * q + p < b * q:
+                remainder = p / q
+                x_new = x_least + remainder
+
+                if x_new - a < 2 * tolerance or b - x_new < 2 * tolerance:
+                    if x_least < middle_point:
+                        remainder = tolerance
+                    else:
+                        remainder = -tolerance
             
+            else:
+                if x_least < middle_point:
+                    remainder = (b - x_least) * gr
+                else:
+                    remainder = (a - x_least) * gr
+
+            if abs(remainder) > tolerance:
+                x_new = x_least + remainder
+            elif remainder > 0:
+                x_new = x_least + tolerance
+            else:
+                x_new = x_least - tolerance
+
+            f_new = f(x_new)
+
+            if f_new <= f_least:
+                if x_new < x_least:
+                    b = x_least
+                else:
+                    a = x_least
+                
+                x_largest = x_middle
+                f_largest = f_middle
+
+                x_middle = x_least
+                f_middle = f_least
+
+                x_least = x_new
+                f_least = f_new
+
+            else:
+                if x_new < x_least:
+                    a = x_new
+                else:
+                    b = x_new
+                if f_new <= f_middle:
+                    x_largest = x_middle
+                    f_largest = f_middle
+
+                    x_middle = x_new
+                    f_middle = f_new
+                elif f_new <= f_largest:
+                    x_largest = x_new
+                    f_largest = f_new
+            n_iter += 1
+
+            if self.PIR:
+                write(f'x = {x_least}, f(x) = {f_least}, iter = {n_iter}')
+            
+            if self.SIR and n_iter < self.max_iter and abs(x_least - middle_point) > 2 * tolerance - (b - a) / 2:
+                self.results = self.results.append({'x': x_least, 'f(x)': f_least, 'Величина исследуемого интервала':abs(a-b), 'Отчет о работе алгоритма': 3}, ignore_index=True)
+        
+        if n_iter == self.max_iter:
+            self.results = self.results.append({'x': x_least, 'f(x)': f_least, 'Величина исследуемого интервала':abs(a-b), 'Отчет о работе алгоритма': 1}, ignore_index=True)
+        else:
+            self.results = self.results.append({'x': x_least, 'f(x)': f_least, 'Величина исследуемого интервала':abs(a-b), 'Отчет о работе алгоритма': 0}, ignore_index=True)       
+
+        return self.results
+    
+    def BFGS(self):
+        f = self.func
+        x0 = self.x0
+        d = 0 # dimension of problem 
+        nabla = grad(f,x0) # initial gradient 
+        H = np.eye(d) # initial hessian
+        x = x0
+        n_iter = 0 
+        self.results = pd.DataFrame(columns=['x', 'f(x)', 'Величина исследуемого интервала', 'Отчет о работе алгоритма'])
+
+        while np.linalg.norm(nabla) > self.eps and self.max_iter > n_iter: # while gradient is positive
+            if n_iter > self.max_iter: 
+                print('Maximum iterations reached!')
+                break
+            n_iter += 1
+            p = -H@nabla # search direction (Newton Method)
+            a = line_search(f,x,p,nabla, self.c1, self.c2) # line search 
+            s = a * p 
+            x_new = x + a * p 
+            nabla_new = grad(f,x_new)
+            y = nabla_new - nabla 
+            y = np.array([y])
+            s = np.array([s])
+            y = np.reshape(y,(d,1))
+            s = np.reshape(s,(d,1))
+            r = 1/(y.T@s)
+            li = (np.eye(d)-(r*((s@(y.T)))))
+            ri = (np.eye(d)-(r*((y@(s.T)))))
+            hess_inter = li@H@ri
+            H = hess_inter + (r*((s@(s.T)))) # BFGS Update
+            nabla = nabla_new[:] 
+            x = x_new[:]
+            if self.PIR:
+                write(f'x = {x}, f(x) = {f(x)}, iter = {n_iter}')
+            if self.SIR and n_iter < self.max_iter and np.linalg.norm(nabla) > self.eps:
+                self.results = self.results.append({'x': x, 'f(x)': f(x), 'Величина исследуемого интервала': 'Нет исс, интервала', 'Отчет о работе алгоритма': 3}, ignore_index=True)
+        if n_iter == self.max_iter:
+            self.results = self.results.append({'x': x, 'f(x)': f(x), 'Величина исследуемого интервала': 'Нет исс, интервала', 'Отчет о работе алгоритма': 1}, ignore_index=True)
+        else:
+            self.results = self.results.append({'x': x, 'f(x)': f(x), 'Величина исследуемого интервала': 'Нет исс, интервала', 'Отчет о работе алгоритма': 0}, ignore_index=True)
+        return self.results
         
 class ExtraTasks(Extremum_1d):
     def __init__(self, 
@@ -117,7 +294,11 @@ class ExtraTasks(Extremum_1d):
                 max_iter = 500,
                 print_intermediate_results = False,
                 save_intermediate_results = True,
-                method = 'Метод золотого сечения'):
+                method = 'Метод золотого сечения',
+                x0 = 0,
+                max_x = 500,
+                c1 = 1e-4,
+                c2 = 0.1):
         Extremum_1d.__init__(self, 
                 func,
                 a,
@@ -125,13 +306,17 @@ class ExtraTasks(Extremum_1d):
                 eps,
                 max_iter,
                 print_intermediate_results,
-                save_intermediate_results)
+                save_intermediate_results,
+                x0,
+                c1,
+                c2)
         self.dict_method = {
         'Метод золотого сечения': self.gss,
         'Метод парабол': self.quadratic_approximation,
-        'Метод Брента': self.gss,
-        'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': self.gss}
+        'Метод Брента': self.brent,
+        'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': self.BFGS}
         self.results = self.dict_method[method]()
+        self.method = method
 
     def q3(self):
         x = np.linspace(self.a, self.b)
@@ -149,6 +334,8 @@ class ExtraTasks(Extremum_1d):
         return fig
 
     def q4(self):
+        if self.method == 'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно':
+            write('ВЫберите любой другой метод')
         x = self.results.index + 1
         y = self.results['Величина исследуемого интервала'].values
         fig = go.Figure()

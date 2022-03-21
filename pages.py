@@ -50,19 +50,19 @@ def page2():
     st.write('Приложение ищет экстремумы функции одной переменной в действительной плоскости')
     #Настройка условий
     func = st.sidebar.text_input('Введите целевую функцию', value = 'x**2 - 2*x + 10')
+    task = st.sidebar.selectbox(label = 'Выберите метод', options = ['Метод золотого сечения', 'Метод парабол', 'Метод Брента', 'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно'])
     a = st.sidebar.number_input('Введите нижнюю границу интервала', value =-0.5)
     b = st.sidebar.number_input('Введите верхнюю границу интервала', value = 0.5)
     eps = st.sidebar.number_input('Введите точность', value = 0.00005)
     max_iter = st.sidebar.number_input('Введите макс. кол-во итераций', value = 500)
     PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
     SIR = st.sidebar.selectbox(label = 'Сохранение промежуточных результатов', options=[False, True])
-    task = st.sidebar.selectbox(label = 'Выберите метод', options = ['Метод золотого сечения', 'Метод парабол', 'Метод Брента', 'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно'])
     Example = mop.Extremum_1d(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= PIR, save_intermediate_results= SIR)
     Extra_Tasks = mop.ExtraTasks(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= False, save_intermediate_results= True, method=task)
     funcs = {
         'Метод золотого сечения': Example.gss,
         'Метод парабол': Example.quadratic_approximation,
-        'Метод Брента': Example.gss,
+        'Метод Брента': Example.brent,
         'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': Example.gss}
 
     if st.sidebar.button('Click'):
