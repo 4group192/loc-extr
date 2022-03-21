@@ -48,20 +48,32 @@ def page1():
 def page2():
     st.title('Поиск экстремумов функции одной перемонной')
     st.write('Приложение ищет экстремумы функции одной переменной в действительной плоскости')
-    st.header('Задания 1, 2, 3, 4')
     #Настройка условий
     func = st.sidebar.text_input('Введите целевую функцию', value = 'x**2 - 2*x + 10')
+    task = st.sidebar.selectbox(label = 'Выберите метод', options = ['Метод золотого сечения', 'Метод парабол', 'Метод Брента', 'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно'])
     a = st.sidebar.number_input('Введите нижнюю границу интервала', value =-0.5)
     b = st.sidebar.number_input('Введите верхнюю границу интервала', value = 0.5)
     eps = st.sidebar.number_input('Введите точность', value = 0.00005)
     max_iter = st.sidebar.number_input('Введите макс. кол-во итераций', value = 500)
     PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
-    SIR = st.sidebar.selectbox(label = 'Сохранение промежуточных результатов', options=[True, False])
-    task = st.sidebar.selectbox(label = 'Выберите метод', options = ['Метод золотого сечения', 'Метод парабол', 'Метод Брента', 'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно'])
+    SIR = st.sidebar.selectbox(label = 'Сохранение промежуточных результатов', options=[False, True])
     Example = mop.Extremum_1d(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= PIR, save_intermediate_results= SIR)
+    Extra_Tasks = mop.ExtraTasks(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= False, save_intermediate_results= True, method=task)
     funcs = {
         'Метод золотого сечения': Example.gss,
         'Метод парабол': Example.quadratic_approximation,
-        'Метод Брента': Example.gss,
+        'Метод Брента': Example.brent,
         'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': Example.gss}
-    st.dataframe(funcs[task]())
+
+    if st.sidebar.button('Click'):
+        st.header('Задание 1. ' + task)
+        st.dataframe(funcs[task]().iloc[:,[0,1,3]])
+
+        st.header('Задание 3. График работы методы')
+        st.plotly_chart(Extra_Tasks.q3())
+
+        st.header('Задание 4. График сходимости алгоритма')
+        st.plotly_chart(Extra_Tasks.q4())
+
+        st.header('Задание 5. Сравнение производительности алгоритмов')
+        st.dataframe(Extra_Tasks.q5())
