@@ -1,7 +1,7 @@
 # Методы одномерной оптимизации
 
 import numpy as np
-from numpy import cos, sin, log, pi, exp
+from numpy import *
 import time
 import pandas as pd
 from streamlit import write
