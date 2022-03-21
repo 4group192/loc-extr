@@ -48,7 +48,7 @@ class Extremum_1d:
                 max_iter = 500,
                 print_intermediate_results = False,
                 save_intermediate_results = False,
-                x0 = 0,
+                x0 = 1,
                 max_x = 100,
                 c1 = 1e-4,
                 c2 = 0.1):
@@ -295,7 +295,7 @@ class ExtraTasks(Extremum_1d):
                 print_intermediate_results = False,
                 save_intermediate_results = True,
                 method = 'Метод золотого сечения',
-                x0 = 0,
+                x0 = 1,
                 max_x = 500,
                 c1 = 1e-4,
                 c2 = 0.1):

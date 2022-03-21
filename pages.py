@@ -57,13 +57,18 @@ def page2():
     max_iter = st.sidebar.number_input('Введите макс. кол-во итераций', value = 500)
     PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
     SIR = st.sidebar.selectbox(label = 'Сохранение промежуточных результатов', options=[False, True])
-    Example = mop.Extremum_1d(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= PIR, save_intermediate_results= SIR)
-    Extra_Tasks = mop.ExtraTasks(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= False, save_intermediate_results= True, method=task)
+    st.sidebar.write('Параметры для BFGS')
+    x0 = st.sidebar.number_input('Введите начальную точку', value =1)
+    max_x = st.sidebar.number_input('Введите максимальное значение аргумента функции', value =100)
+    c1 = st.sidebar.number_input('Введите параметр для первого условия Вольфе', value =10**(-4))
+    c2 = st.sidebar.number_input('Введите параметр для второго условия Вольфе', value =0.1)
+    Example = mop.Extremum_1d(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= PIR, save_intermediate_results= SIR, x0=x0, max_x=max_x,c1=c1,c2=c2)
+    Extra_Tasks = mop.ExtraTasks(func =func, a = a, b = b, eps = eps, max_iter = max_iter, print_intermediate_results= False, save_intermediate_results= True, method=task, x0=x0, max_x=max_x,c1=c1,c2=c2)
     funcs = {
         'Метод золотого сечения': Example.gss,
         'Метод парабол': Example.quadratic_approximation,
         'Метод Брента': Example.brent,
-        'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': Example.gss}
+        'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': Example.BFGS}
 
     if st.sidebar.button('Click'):
         st.header('Задание 1. ' + task)
