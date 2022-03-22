@@ -1,11 +1,12 @@
 # Методы одномерной оптимизации
 
 import numpy as np
+import sympy as sp
 from numpy import *
 import time
 import pandas as pd
 from streamlit import write
-from sympy import dict_merge
+from sympy import dict_merge, solve
 import plotly.graph_objects as go
 
 def grad(f,x): 
@@ -103,6 +104,7 @@ class Extremum_1d:
             f0, f1, f2 = func(a), func(b), func(c)
             f_x = {a: f0, b: f1, c: f2}
             self.results = pd.DataFrame(columns=['x', 'f(x)', 'Величина исследуемого интервала', 'Отчет о работе алгоритма'])
+            c, b, a = sorted([a, b, c], key=lambda x: f_x[x])
             n_iter = 0
             while n_iter < self.max_iter and abs(b - c)/2 > self.eps:
                 f0, f1, f2 = f_x[a], f_x[b], f_x[c]
@@ -317,6 +319,7 @@ class ExtraTasks(Extremum_1d):
         'Алгоритм Бройдена — Флетчера — Гольдфарба — Шанно': self.BFGS}
         self.results = self.dict_method[method]()
         self.method = method
+        self.sp_func = lambda x: eval(func.replace('sin', 'sp.sin').replace('cos', 'sp.cos').replace('exp', 'sp.exp').replace('pi','sp.pi').replace('arccos', 'sp.arccos'))
 
     def q3(self):
         x = np.linspace(self.a, self.b)
@@ -327,6 +330,7 @@ class ExtraTasks(Extremum_1d):
         fig.add_trace(go.Scatter(x=x, y=y,
                     mode='lines',
                     name='f(x)'))
+
         for i in range(len(self.results)):
             fig.add_trace(go.Scatter(x=[self.results['x'][i]], y=[self.results['f(x)'][i]],
                     mode='markers',
@@ -359,7 +363,8 @@ class ExtraTasks(Extremum_1d):
         return df
 
 
+
             
 
 if __name__ == '__main__':
-    ExtraTasks('-5*x**5 + 4*x**4 - 12*x**3  + 11*x**2 - 2*x + 1',-0.5,0.5,print_intermediate_results=True, save_intermediate_results=True,method = 'Метод золотого сечения').visualize().show()
+    print(ExtraTasks('-5*x**5 + 4*x**4 - 12*x**3  + 11*x**2 - 2*x + 1',-0.5,0.5,print_intermediate_results=True, save_intermediate_results=True,method = 'Метод золотого сечения').minimize())
