@@ -1,5 +1,5 @@
 import streamlit as st
-from Classes import fnp, mop
+from Classes import fnp, mop, gradient_methods
 import time
 from numpy import sin, cos, tan, exp, pi
 
@@ -82,3 +82,27 @@ def page2():
 
         st.header('Задание 5. Сравнение производительности алгоритмов')
         st.dataframe(Extra_Tasks.q5())
+
+def page3():
+    st.title('Многомерная (до 4-х переменных) оптимизация с помощью градиентных методов')
+    st.sidebar.header('Ввод данных')
+    func = st.sidebar.text_input('Целевая функция', value = 'x1**2 - 2*x1*x2 + x2**2')
+    method = st.sidebar.selectbox('Выберите метод', options=[
+        'Градиентный спуск с постоянным шагом',
+        'Градиентный спуск с дроблением шага',
+        'Метод наискорейшего спуска',
+        'Метод сопряженных градиентов'])
+    x0 = st.sidebar.text_input('Список координат начальной точки. Пример для 3-х переменных: [2, 5, 1]')
+    max_iterations = st.sidebar.slider('Макс. кол-во итераций, ', min_value=1, max_value=1000, value=500, step=25)
+    if method != 'Метод сопряженных градиентов':
+        lr = st.sidebar.slider('learning rate', min_value=0.05, max_value=1.0, value=0.2, step=0.05)
+        PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
+        SIR = st.sidebar.selectbox(label = 'Сохранение промежуточных результатов', options=[False, True])
+    #func, n_variables, x0, max_iterations, eps, SIR, PIR, lr
+
+    if st.sidebar.button('Найти минимум'):
+        if method != 'Метод сопряженных градиентов':
+            result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations, SIR = SIR, PIR = PIR, lr = lr).minimize2(method)
+        else:
+            result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations).minimize2(method)
+        st.write(result)
