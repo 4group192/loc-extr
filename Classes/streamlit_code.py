@@ -97,12 +97,14 @@ def page3():
     if method != 'Метод сопряженных градиентов':
         lr = st.sidebar.slider('learning rate', min_value=0.05, max_value=1.0, value=0.2, step=0.05)
         PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
-        SIR = st.sidebar.selectbox(label = 'Сохранение промежуточных результатов', options=[False, True])
     #func, n_variables, x0, max_iterations, eps, SIR, PIR, lr
 
     if st.sidebar.button('Найти минимум'):
         if method != 'Метод сопряженных градиентов':
-            result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations, SIR = SIR, PIR = PIR, lr = lr).minimize2(method)
+            obj = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations, PIR = PIR, lr = lr)
+            result = obj.minimize2(method)
+            st.write(result)
+            st.plotly_chart(obj.visualize())
         else:
-            result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations).minimize2(method)
-        st.write(result)
+            result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations).minimize2()
+            st.write(result)
