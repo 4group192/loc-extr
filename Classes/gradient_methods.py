@@ -1,5 +1,4 @@
 #Градиентные методы
-from matplotlib.pyplot import title
 import numpy as np
 import scipy
 from scipy.optimize import minimize_scalar, minimize, approx_fprime
