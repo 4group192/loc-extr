@@ -154,7 +154,6 @@ def test(func: str, x0: str, max_iterations: int, lr: float):
         columns = func_dict.keys(), index = ['Полученное решение', 'Время выполнения', 'Кол-во итераций'])
 
     for method in func_dict:
-        print(method)
         start_time = time.time()
         method_result = func_dict[method]()
         exec_time = time.time() - start_time
