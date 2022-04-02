@@ -49,11 +49,12 @@ class Extremum:
         не может работать с символами sympy. Поэтому нужны две эти функции.
         """
         self.limits = limits
-        assert limits[0][0] < limits[0][1]
-        self.x = np.arange(limits[0][0], limits[0][1] + 1, 0.1)
-                
-        assert limits[1][0] < limits[1][1]
-        self.y = np.arange(limits[1][0], limits[1][1] + 1, 0.1)
+        if limits is not None:
+            assert limits[0][0] < limits[0][1]
+            self.x = np.arange(limits[0][0], limits[0][1] + 1, 0.1)
+                    
+            assert limits[1][0] < limits[1][1]
+            self.y = np.arange(limits[1][0], limits[1][1] + 1, 0.1)
 
         self.X, self.Y = np.meshgrid(self.x, self.y)
         self.numeric_func = lambda x,y: eval(func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('pi','np.pi'))
