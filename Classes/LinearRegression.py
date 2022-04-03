@@ -1,4 +1,3 @@
-from jinja2 import ModuleLoader
 import numpy as np
 from scipy.optimize import minimize
 import plotly.graph_objects as go
@@ -11,7 +10,7 @@ class LinearModels:
     def get_weights(self):
         return self.__weights
 
-    def fit(self, X, Y,reg = None, alpha = 0.1):
+    def fit(self, X, Y,reg = None, alpha = 0.1, poly_degree = 2):
         assert len(X) == len(Y)
 
         model = self.__model
@@ -22,7 +21,8 @@ class LinearModels:
         Y = np.array(Y)
 
         if model == 'poly':
-            X = PolynomialFeatures(degree=2, include_bias=False).fit_transform(X)
+            self.__degree = poly_degree
+            X = PolynomialFeatures(degree=poly_degree, include_bias=False).fit_transform(X)
         elif model == 'expo':
             Y = np.log(Y)
 
@@ -30,10 +30,10 @@ class LinearModels:
             loss = lambda weights: np.sum((X.dot(weights) - Y)**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         elif reg == 'l2':
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum((weights)**2)
+            loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum((weights[1:])**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         elif reg == 'l1':
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum(np.abs(weights))
+            loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum(np.abs(weights[1:]))
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         if model == 'expo':
             self.__weights = np.exp(self.__weights)
@@ -41,7 +41,7 @@ class LinearModels:
     def predict(self, X):
 
         if self.__model == 'poly':
-            X = PolynomialFeatures(degree=2, include_bias=False).fit_transform(np.c_[np.ones(len(X)), np.array(X)])
+            X = PolynomialFeatures(degree=self.__degree, include_bias=False).fit_transform(np.c_[np.ones(len(X)), np.array(X)])
 
         elif self.__model == 'expo':
             X = np.c_[np.array(X)]
@@ -62,6 +62,10 @@ class LinearModels:
             y = self.predict(x)
             fig.add_trace(go.Scatter(x = x.reshape(1,-1)[0], y = y.reshape(1,-1)[0], name = 'y_p'))
             fig.add_trace(go.Scatter(x = self.X, y = self.Y, mode = 'markers', name = 'y'))
+            fig.update_layout(
+                xaxis_title = 'X',
+                yaxis_title = 'y'
+            )
         else:
             x1, x2 = np.linspace(np.min(self.X),np.max(self.X)), np.linspace(np.min(self.X),np.max(self.X))
             X1, X2 =np.meshgrid(x1, x2)
@@ -76,17 +80,36 @@ class LinearModels:
                 y = self.X[:,1],
                 z = self.Y
             ))
+            fig.update_layout(
+                width=1000, height=1000,
+                margin=dict(l=65, r=50, b=65, t=90))
         return fig
 
+    def analytical_func(self):
+        result = 'f(X) = '
+        if self.__model == 'classic':
+            result += f'{self.__weights[0]}'
+            for i in range(1, len(self.__weights)):
+                result += f' + {self.__weights[i]}*x{i}'
+        elif self.__model == 'poly':
+            result = 'Вывод аналитической функции не реализован для полиномиальной модели'
+        
+        else:
+            result += f'{self.__weights[0]}*{self.__weights[1]}**x{1}'
+            for i in range(2, len(self.__weights)):
+                result += f' + {self.__weights[0]}*{self.__weights[i]}**x{i}'
+
+        return result
 
             
 
 if __name__ == '__main__':
     
 
-    poly = LinearModels('classic')
-    poly.fit(X = [1,2,3,4],Y = [5,6,7,8])
+    poly = LinearModels('expo')
+    poly.fit(X = [[1,2], [3,4], [5,6], [6,7], [7,8]],Y = np.array([1,3,6,9,10])**3, poly_degree=9)
     print(poly.get_weights())
-    poly.predict([1,2,3,4])
-    poly.visualize().show()
+    poly.predict([5,6])
+    print(poly.analytical_func())
+    poly.visualize()
     

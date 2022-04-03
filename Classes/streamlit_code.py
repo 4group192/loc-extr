@@ -1,7 +1,8 @@
 import streamlit as st
-from Classes import fnp, mop, gradient_methods
+from Classes import fnp, mop, gradient_methods, LinearRegression
 import time
 from numpy import sin, cos, tan, exp, pi
+import pandas as pd
 
 def page1():
     st.title('Поиск экстремумов ФНП')
@@ -108,3 +109,58 @@ def page3():
         else:
             result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations).minimize2()
             st.write(result)
+
+def page4():
+    st.title('Регрессия')
+    st.write('Приложение строит модель регрессии, выводит коэффиценты и строит график')
+    st.write('***')
+
+    st.sidebar.header('Ввод данных')
+    chosen_model = st.sidebar.selectbox('Выберите тип регрессии', options=[
+        'Классическая',
+        'Полиномиальная',
+        'Экспоненциальная'
+    ])
+    if chosen_model == 'Полиномиальная':
+        poly_degree = st.sidebar.slider('Выберите максимальную степерь полиномиальной модели', 1, 10)
+    else:
+        poly_degree = None
+    X = st.sidebar.text_input('Введите массив предикаторов X.', 
+    help='Пример для ввода данных для 3-х регрессоров: [[1,0,3], [2,3,1], [4,2,9], [8,4,9]]')
+    
+    Y = st.sidebar.text_input('Введите массив предсказываемой переменной (y).', help = 'Пример: [1, 2, 3, 4]')
+
+    reg = st.sidebar.selectbox('Вид регуляризации', options = [None, 'l1', 'l2'])
+    if reg is not None:
+        alpha = st.sidebar.number_input('Вес "штрафа" регуляризации')
+    else:
+        alpha = None
+
+    plot = st.sidebar.selectbox('Построение графика', options = [False, True])
+
+    model_dict= {'Классическая': 'classic',
+        'Полиномиальная': 'poly',
+        'Экспоненциальная': 'expo'}
+
+    if st.sidebar.button('Click'):
+        st.header('Введенные данные')
+        st.write({
+            'Тип регрессии': chosen_model,
+            'X': X,
+            'Y': Y,
+            'Макс. степень полиномиальной модели': poly_degree,
+            'Регуляризация': reg,
+            'Вес штрафа': alpha})
+        st.write('***')
+        st.header('Результат программы')
+        model = LinearRegression.LinearModels(model = model_dict[chosen_model])
+        model.fit(X = eval(X), Y = eval(Y), poly_degree=poly_degree, alpha = alpha)
+        st.write(model.analytical_func())
+        weights = pd.DataFrame(
+            {'Полученные веса': model.get_weights()}, 
+            index = [f'w{i}' for i in range(len(model.get_weights()))])
+        st.dataframe(weights)
+
+        if plot:
+            st.plotly_chart(model.visualize())
+
