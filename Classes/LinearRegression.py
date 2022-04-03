@@ -26,14 +26,14 @@ class LinearModels:
         elif model == 'expo':
             Y = np.log(Y)
 
-        if reg is None:
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2)
-            self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
-        elif reg == 'l2':
+        if reg == 'l2':
             loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum((weights[1:])**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         elif reg == 'l1':
             loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum(np.abs(weights[1:]))
+            self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
+        else:
+            loss = lambda weights: np.sum((X.dot(weights) - Y)**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         if model == 'expo':
             self.__weights = np.exp(self.__weights)
