@@ -1,7 +1,7 @@
 import streamlit as st
 from Classes import fnp, mop, gradient_methods, LinearRegression
 import time
-from numpy import sin, cos, tan, exp, pi
+from numpy import *
 import pandas as pd
 
 def page1():
@@ -96,7 +96,7 @@ def page3():
     x0 = st.sidebar.text_input('Список координат начальной точки. Пример для 3-х переменных: [2, 5, 1]')
     max_iterations = st.sidebar.slider('Макс. кол-во итераций, ', min_value=1, max_value=1000, value=500, step=25)
     if method != 'Метод сопряженных градиентов':
-        lr = st.sidebar.slider('learning rate', min_value=0.05, max_value=1.0, value=0.2, step=0.05)
+        lr = st.sidebar.number_input('learning rate', value=0.05, step = 0.01)
         PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
     #func, n_variables, x0, max_iterations, eps, SIR, PIR, lr
 

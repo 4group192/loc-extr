@@ -78,7 +78,7 @@ class GradientMethod:
         self.dataset = self.dataset[0:0] # Удалить результаты других методов
         try:
             for i in range(1, self.max_iterations):
-                grad = approx_fprime(x,self.function,epsilon = 1e-5)
+                grad = approx_fprime(x,self.function,epsilon = 1e-7)
                 diff = -self.lr*grad
                 if np.all(np.abs(diff) <= self.eps):
                     break
@@ -104,7 +104,7 @@ class GradientMethod:
         try:
             for i in range(1, self.max_iterations):
                 f0 = self.function(x)
-                grad = approx_fprime(x,self.function,epsilon = 1e-5)
+                grad = approx_fprime(x,self.function,epsilon = 1e-7)
                 diff = -lr*grad
 
                 if np.all(np.abs(diff) <= self.eps):
@@ -133,7 +133,7 @@ class GradientMethod:
         try:
             for i in range(1, self.max_iterations):
                 f0 = self.function(x)
-                grad = approx_fprime(x,self.function,epsilon = 1e-5)
+                grad = approx_fprime(x,self.function,epsilon = 1e-7)
                 lr = minimize_scalar(fun = lambda lr: self.function(x - lr*grad), method='brent').x
                 diff = -lr*grad
 
@@ -156,7 +156,7 @@ class GradientMethod:
         """
         Препод сказал, больше не нужно реализовывать функции...
         """
-        grad = lambda x: approx_fprime(x,self.function,epsilon = 1e-5)
+        grad = lambda x: approx_fprime(x,self.function,epsilon = 1e-7)
         res = minimize(fun = self.function, x0 = self.x0, method='Newton-CG', jac = grad,options= {'maxiter': self.max_iterations, 'xtol': self.eps})
         return {'X': res.x[:self.n_variables], 'f(X)': res.fun, 'Кол-во итераций': res.nit}
 

@@ -1,3 +1,4 @@
+from audioop import bias
 import numpy as np
 from scipy.optimize import minimize
 import plotly.graph_objects as go
@@ -47,7 +48,7 @@ class LinearModels:
         assert len(X) == len(Y)
 
         model = self.__model
-        self.X = np.array(X) 
+        self.X = X 
         self.Y = np.array(Y)
         X = np.c_[np.ones(len(X)), np.array(X)]
         self.n_features = X.shape[1] - 1
@@ -55,18 +56,18 @@ class LinearModels:
 
         if model == 'poly':
             self.__degree = poly_degree
-            X = PolynomialFeatures(degree=poly_degree, include_bias=False).fit_transform(X)
+            X = PolynomialFeatures(degree=self.__degree).fit_transform(np.c_[np.array(self.X)])
         elif model == 'expo':
             Y = np.log(Y)
 
         if reg == 'l2':
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum((weights[1:])**2)
+            loss = lambda weights: np.mean((X.dot(weights) - Y)**2) + alpha*np.sum((weights[1:])**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         elif reg == 'l1':
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum(np.abs(weights[1:]))
+            loss = lambda weights: np.mean((X.dot(weights) - Y)**2) + alpha*np.sum(np.abs(weights[1:]))
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         else:
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2)
+            loss = lambda weights: np.mean((X.dot(weights) - Y)**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         if model == 'expo':
             self.__weights = np.exp(self.__weights)
@@ -74,7 +75,7 @@ class LinearModels:
     def predict(self, X):
 
         if self.__model == 'poly':
-            X = PolynomialFeatures(degree=self.__degree, include_bias=False).fit_transform(np.c_[np.ones(len(X)), np.array(X)])
+            X = PolynomialFeatures(degree=self.__degree).fit_transform(np.c_[np.array(X)])
 
         elif self.__model == 'expo':
             X = np.c_[np.array(X)]
@@ -139,10 +140,8 @@ class LinearModels:
 if __name__ == '__main__':
     
 
-    poly = LinearModels('expo')
-    poly.fit(X = [[1,2], [3,4], [5,6], [6,7], [7,8]],Y = np.array([1,3,6,9,10])**3, poly_degree=9)
+    poly = LinearModels('poly')
+    poly.fit(X = list(range(-10,10)),Y = np.array(list(range(-10,10)))**9, poly_degree=9)
     print(poly.get_weights())
-    poly.predict([5,6])
-    print(poly.analytical_func())
-    poly.visualize()
-    
+    print(poly.predict([5,6]))
+    poly.visualize().show()
