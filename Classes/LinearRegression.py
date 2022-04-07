@@ -4,6 +4,39 @@ import plotly.graph_objects as go
 from sklearn.preprocessing import PolynomialFeatures
 
 class LinearModels:
+    """
+    Класс, создающий модель линейной регрессии
+
+    Attributes
+    ----------
+    __model: str
+        Тип модели {'classic', 'expo', 'poly'}
+    __weights: array
+        Полученные веса
+    X: array
+        Массив признаков
+    Y: array
+        Массив таргетов
+
+    Methods
+    -------
+    fit(self)
+        Обучает модель
+        Returns: self
+        
+    predict(self, X: list or array)
+        Предсказывет значения для введеного набора/наборов признаков X
+        Returns: array
+
+    visualize(self)
+        Строит график полученной линейной модели и наносит на график данные, на которых модель обучалась
+        Returns: plotly.graphic_objects.Figure
+
+    analytuc_func(self)
+        Возвращает модель а аналитическом виде
+        Returns: str
+
+    """
     def __init__(self, model = 'classic'):
         self.__model = model
 
