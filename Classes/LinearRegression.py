@@ -4,6 +4,39 @@ import plotly.graph_objects as go
 from sklearn.preprocessing import PolynomialFeatures
 
 class LinearModels:
+    """
+    Класс, создающий модель линейной регрессии
+
+    Attributes
+    ----------
+    __model: str
+        Тип модели {'classic', 'expo', 'poly'}
+    __weights: array
+        Полученные веса
+    X: array
+        Массив признаков
+    Y: array
+        Массив таргетов
+
+    Methods
+    -------
+    fit(self)
+        Обучает модель
+        Returns: self
+        
+    predict(self, X: list or array)
+        Предсказывет значения для введеного набора/наборов признаков X
+        Returns: array
+
+    visualize(self)
+        Строит график полученной линейной модели и наносит на график данные, на которых модель обучалась
+        Returns: plotly.graphic_objects.Figure
+
+    analytuc_func(self)
+        Возвращает модель а аналитическом виде
+        Returns: str
+
+    """
     def __init__(self, model = 'classic'):
         self.__model = model
 
@@ -26,14 +59,14 @@ class LinearModels:
         elif model == 'expo':
             Y = np.log(Y)
 
-        if reg is None:
-            loss = lambda weights: np.sum((X.dot(weights) - Y)**2)
-            self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
-        elif reg == 'l2':
+        if reg == 'l2':
             loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum((weights[1:])**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         elif reg == 'l1':
             loss = lambda weights: np.sum((X.dot(weights) - Y)**2) + alpha*np.sum(np.abs(weights[1:]))
+            self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
+        else:
+            loss = lambda weights: np.sum((X.dot(weights) - Y)**2)
             self.__weights = minimize(loss, x0 = X.shape[1]*[0]).x
         if model == 'expo':
             self.__weights = np.exp(self.__weights)
