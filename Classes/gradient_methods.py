@@ -11,6 +11,49 @@ from sympy import dict_merge, solve
 import plotly.graph_objects as go
 
 class GradientMethod:
+    """
+    Класс реализующий градиентные методы
+
+    Заметки: вместо функции нескольких переменных f(x1, x2, x3,..., xn) лучше использовать f(X), где X: array.
+    Убрать eval из класса (обрабатывать вводимые пользователем данные отдельной функцией). Эти исправления расширят возможности
+    класса. 
+
+    Attributes
+    ----------
+    func: lambda
+        Оптимизируемая функция
+    x0: str
+        Начальная точка
+    n_variables: int
+        Кол-во переменных
+    max_iterations: int
+        Кол-во итераций
+    eps: float
+        Точность
+    SIR: bool
+        Сохранить промежуточные результаты
+    PIR: bool
+        Вывести промежуточные результаты
+    lr: float
+        Скорость обучения
+    
+    Methods
+    -------
+    minimize2(self, method: {
+        'Градиентный спуск с постоянным шагом',
+        'Градиентный спуск с дроблением шага',
+        'Метод наискорейшего спуска',
+        'Метод сопряженных градиентов'
+    })
+        Оптимизирует целевую функцию выбранным методом
+        Returns: {'X': array, 'f(X)': float, 'Кол-во итераций': int}
+    function(self, x):
+        f(x1, x2, x3, x4) -> f(X)
+    visualize(self):
+        Строит график сходимости
+        Returns: plotly.go.Figure
+    
+    """
     def __init__(self, func, x0, max_iterations = 500, eps = 1e-5, SIR = False, PIR = False, lr = 0.2):
         self.func = lambda x1, x2, x3, x4: eval(func)
         self.n_variables = len(eval(x0))
@@ -29,17 +72,14 @@ class GradientMethod:
         x1, x2, x3, x4 = x
         return self.func(x1,x2,x3,x4)
 
-    def grad(self, x):
-        return approx_fprime(x,self.function,epsilon = 1e-5)
-
     def gs_fixed_rate(self):
         x = self.x0
         f = self.function(x)
         self.dataset = self.dataset[0:0] # Удалить результаты других методов
         try:
             for i in range(1, self.max_iterations):
-
-                diff = -self.lr*self.grad(x)
+                grad = approx_fprime(x,self.function,epsilon = 1e-5)
+                diff = -self.lr*grad
                 if np.all(np.abs(diff) <= self.eps):
                     break
                 x += diff
@@ -64,7 +104,8 @@ class GradientMethod:
         try:
             for i in range(1, self.max_iterations):
                 f0 = self.function(x)
-                diff = -lr*self.grad(x)
+                grad = approx_fprime(x,self.function,epsilon = 1e-5)
+                diff = -lr*grad
 
                 if np.all(np.abs(diff) <= self.eps):
                     break
@@ -75,25 +116,26 @@ class GradientMethod:
                     write(row)
                 self.dataset = self.dataset.append(row, ignore_index=True)
                 if f0 > f:
-                    lr *= 1.5
+                    lr *= 1.25
                 else:
-                    lr /= 1.5
+                    lr /= 1.25
             if i == self.max_iterations:
                 return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
             else:
                 return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
         except Exception as e:
-            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2}
+            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
 
     def gs_optimal_rate(self):
         self.dataset = self.dataset[0:0]
+        x = self.x0
+        f = self.function(x)
         try:
-            x = self.x0
             for i in range(1, self.max_iterations):
                 f0 = self.function(x)
-                
-                lr = minimize_scalar(fun = lambda lr: self.function(x - lr*self.grad(x)), method='brent').x
-                diff = -lr*self.grad(x)
+                grad = approx_fprime(x,self.function,epsilon = 1e-5)
+                lr = minimize_scalar(fun = lambda lr: self.function(x - lr*grad), method='brent').x
+                diff = -lr*grad
 
                 if np.all(np.abs(diff) <= self.eps):
                     break
@@ -108,13 +150,14 @@ class GradientMethod:
             else:
                 return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
         except Exception as e:
-            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2}
+            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
 
     def newton_cg(self):
         """
         Препод сказал, больше не нужно реализовывать функции...
         """
-        res = minimize(fun = self.function, x0 = self.x0, method='Newton-CG', jac = self.grad,options= {'maxiter': self.max_iterations, 'xtol': self.eps})
+        grad = lambda x: approx_fprime(x,self.function,epsilon = 1e-5)
+        res = minimize(fun = self.function, x0 = self.x0, method='Newton-CG', jac = grad,options= {'maxiter': self.max_iterations, 'xtol': self.eps})
         return {'X': res.x[:self.n_variables], 'f(X)': res.fun, 'Кол-во итераций': res.nit}
 
     def minimize2(self, method = 'Метод сопряженных градиентов'):
