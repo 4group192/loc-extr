@@ -93,10 +93,17 @@ def page3():
         'Градиентный спуск с дроблением шага',
         'Метод наискорейшего спуска',
         'Метод сопряженных градиентов'])
-    x0 = st.sidebar.text_input('Список координат начальной точки. Пример для 3-х переменных: [2, 5, 1]')
+    x0 = eval(st.sidebar.text_input('Список координат начальной точки. Пример для 3-х переменных: [2, 5, 1]', value='[0,0]'))
+
+    str_value = 'lambda x1'
+    for i in range(2,len(x0)+1):
+        str_value += f', x{i}'
+    str_value +=':'
+    func = eval(str_value+func)
+
     max_iterations = st.sidebar.slider('Макс. кол-во итераций, ', min_value=1, max_value=1000, value=500, step=25)
     if method != 'Метод сопряженных градиентов':
-        lr = st.sidebar.number_input('learning rate', value=0.05, step = 0.01)
+        lr = st.sidebar.number_input("learning rate", value=1e-3, min_value=1e-5,max_value=1., step=1e-6, format='%.6f')
         PIR = st.sidebar.selectbox(label = 'Вывод промежуточных результатов', options=[False, True])
     #func, n_variables, x0, max_iterations, eps, SIR, PIR, lr
 
@@ -105,7 +112,8 @@ def page3():
             obj = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations, PIR = PIR, lr = lr)
             result = obj.minimize2(method)
             st.write(result)
-            st.plotly_chart(obj.visualize())
+            st.plotly_chart(obj.visualize_contour())
+            st.plotly_chart(obj.visualize_convergence())
         else:
             result = gradient_methods.GradientMethod(func = func, x0 = x0, max_iterations = max_iterations).minimize2()
             st.write(result)
