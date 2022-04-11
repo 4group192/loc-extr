@@ -1,4 +1,5 @@
 #Градиентные методы
+from sqlite3 import DataError
 import numpy as np
 import scipy
 from scipy.optimize import minimize_scalar, minimize, approx_fprime
@@ -9,6 +10,7 @@ import pandas as pd
 from streamlit import write
 from sympy import dict_merge, solve
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 class GradientMethod:
     """
@@ -55,27 +57,22 @@ class GradientMethod:
     
     """
     def __init__(self, func, x0, max_iterations = 500, eps = 1e-5, SIR = False, PIR = False, lr = 0.2):
-        self.func = lambda x1, x2, x3, x4: eval(func)
-        self.n_variables = len(eval(x0))
-        self.x0 = np.array([0, 0, 0, 0], dtype='float64')
-        for i in range(self.n_variables):
-            self.x0[i] = eval(x0)[i]
-        
+        self.func = func
+        self.x0 = x0
+        self.n_variables = len(x0)
         self.max_iterations = max_iterations
         self.eps = eps
         self.SIR = SIR
         self.PIR = PIR
         self.lr = lr
-        self.dataset = pd.DataFrame(columns=['iter', 'diff', 'X', 'f(X)'])
         
     def function(self, x):
-        x1, x2, x3, x4 = x
-        return self.func(x1,x2,x3,x4)
+        return self.func(*x)
 
     def gs_fixed_rate(self):
         x = self.x0
         f = self.function(x)
-        self.dataset = self.dataset[0:0] # Удалить результаты других методов
+        self.dataset = {'iter': [0], 'x': [x], 'f': [f], 'diff': [0]}
         try:
             for i in range(1, self.max_iterations):
                 grad = approx_fprime(x,self.function,epsilon = 1e-7)
@@ -84,23 +81,28 @@ class GradientMethod:
                     break
                 x += diff
                 f = self.function(x)
-                row = {'iter': i, 'diff': diff[:self.n_variables], 'X': x[:self.n_variables], 'f(X)': f}
-                if self.PIR:
+                if self.PIR: #Вывод промежуточных результатов, работает долько для сайта
+                    row = {'iter': i, 'diff': np.mean(np.abs(grad[:self.n_variables])), 'X': x[:self.n_variables], 'f(X)': round(f, 4)}
                     write(row)
-                self.dataset = self.dataset.append(row, ignore_index=True)
+
+                self.dataset['iter'].append(i)
+                self.dataset['x'].append(x)
+                self.dataset['f'].append(f)
+                self.dataset['diff'].append(diff)
+
             if i == self.max_iterations:
-                return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
+                return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
             else:
-                return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
+                return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
         except Exception as e:
-            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
+            return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
 
 
     def gs_splitted_rate(self):
         lr = self.lr
         x = self.x0
-        self.dataset = self.dataset[0:0]
         f = self.function(x)
+        self.dataset = {'iter': [0], 'x': [x], 'f': [f], 'diff': [0]}
         try:
             for i in range(1, self.max_iterations):
                 f0 = self.function(x)
@@ -111,25 +113,31 @@ class GradientMethod:
                     break
                 x += diff
                 f = self.function(x)
-                row = {'iter': i, 'diff': diff[:self.n_variables], 'X': x[:self.n_variables], 'f(X)': f}
-                if self.PIR:
+               
+                if self.PIR: #Вывод промежуточных результатов, работает долько для сайта
+                    row = {'iter': i, 'diff': np.mean(np.abs(grad[:self.n_variables])), 'X': x[:self.n_variables], 'f(X)': round(f, 4)}
                     write(row)
-                self.dataset = self.dataset.append(row, ignore_index=True)
+
+                self.dataset['iter'].append(i)
+                self.dataset['x'].append(x)
+                self.dataset['f'].append(f)
+                self.dataset['diff'].append(diff)
+
                 if f0 > f:
                     lr *= 1.25
                 else:
                     lr /= 1.25
             if i == self.max_iterations:
-                return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
+                return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
             else:
-                return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
+                return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
         except Exception as e:
-            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
+            return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
 
     def gs_optimal_rate(self):
-        self.dataset = self.dataset[0:0]
         x = self.x0
         f = self.function(x)
+        self.dataset = {'iter': [0], 'x': [x], 'f': [f], 'diff': [0]}
         try:
             for i in range(1, self.max_iterations):
                 f0 = self.function(x)
@@ -141,16 +149,20 @@ class GradientMethod:
                     break
                 x += diff
                 f = self.function(x)
-                row = {'iter': i, 'diff': diff[:self.n_variables], 'X': x[:self.n_variables], 'f(X)': f}
-                if self.PIR:
+                if self.PIR: #Вывод промежуточных результатов, работает долько для сайта
+                    row = {'iter': i, 'diff': np.mean(np.abs(grad[:self.n_variables])), 'X': x[:self.n_variables], 'f(X)': round(f, 4)}
                     write(row)
-                self.dataset = self.dataset.append(row, ignore_index=True)
+
+                self.dataset['iter'].append(i)
+                self.dataset['x'].append(x)
+                self.dataset['f'].append(f)
+                self.dataset['diff'].append(diff)
             if i == self.max_iterations:
-                return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
+                return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 1}
             else:
-                return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
+                return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 0}
         except Exception as e:
-            return {'X': x[:self.n_variables], 'f(X)': f, 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
+            return {'X': x[:self.n_variables], 'f(X)': round(f, 4), 'Кол-во итераций': i, 'Отчет о работе алгоритма': 2, 'err': e}
 
     def newton_cg(self):
         """
@@ -169,19 +181,44 @@ class GradientMethod:
         }
         return func_dict[method]()
     
-    def visualize(self):
-        x = self.dataset.iter
-        y = self.dataset['diff'].values
-        fig = go.Figure()
-        for i in range(self.n_variables):
-            y_fixed = []
-            for j in range(len(y)):
-                y_fixed.append(abs(y[j][i]))
-            fig.add_trace(go.Scatter(x = x, y = y_fixed, name = f'Grad{i+1}'))
+    def visualize_contour(self):
+        assert self.n_variables == 2
+        min_x = np.min(self.dataset['x']) - 0.1
+        max_x = np.max(self.dataset['x'])+ 0.1
+
+        x_axis = np.linspace(min_x, max_x)
+        y_axis = np.linspace(min_x, max_x)
+
+        z_axis = []
+        for x in x_axis:
+            z_axis_i = []
+            for y in y_axis:
+                z_axis_i.append(self.function([x, y]))
+            z_axis.append(z_axis_i)
+        
+        contour = go.Contour(x=x_axis, y=y_axis, z=np.transpose(z_axis), name='f(x, y)', colorscale='ice')
+
+        X = np.array(self.dataset['x'])
+        descent_way = go.Scatter(x = X[:,0], y = X[:,1], mode = 'lines+markers')
+        fig = go.Figure(data = [contour, descent_way])
+        return fig
+
+    def visualize_convergence(self):
+        assert self.n_variables == 2
+        x = self.dataset['iter']
+        assert len(x) > 1, 'Кол-во итераций недостаточно для постройки графика сходимости'
+        y_grad = np.sum((np.array(self.dataset['diff']))**2)**0.5
+        y_func = self.dataset['f']
+        fig = make_subplots(cols = 2)
+
+        fig.add_trace(go.Scatter(x = x, y = y_func, name = 'f(X)'), row = 1, col = 1)
+
+        fig.add_trace(go.Scatter(x = x, y = y_grad, name = '|| g(X) ||'), row = 1, col = 2)
+        
         fig.update_layout(
-            title = 'График сходимости',
+            title = 'Значение функции и l2-норма градиента каждую итерацию',
             xaxis_title = 'Итерации',
-            yaxis_title = 'Шаг')
+            yaxis_title = 'f(X) or || g(X) ||')        
         return fig
 
 def test(func: str, x0: str, max_iterations: int, lr: float):
@@ -208,5 +245,5 @@ def test(func: str, x0: str, max_iterations: int, lr: float):
     
 
 if __name__ == '__main__':
-    obj = GradientMethod(func = 'x1**2 + (x2+5)**2', x0 = '[10,10]', max_iterations = 100, eps = 1e-5, SIR = True, PIR = True, lr = 0.1)
-    print(test(func = 'x1**2 + (x2+5)**2',  x0 = '[10,10]', max_iterations = 100,  lr = 0.1))
+    obj = GradientMethod(func = lambda x1, x2:x1**2 + (x2+5)**2, x0 = '[10,10]', max_iterations = 100, eps = 1e-5, SIR = True, PIR = True, lr = 0.1)
+    print(obj.minimize2('Градиентный спуск с постоянным шагом'))
