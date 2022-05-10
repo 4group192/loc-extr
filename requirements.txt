@@ -5,4 +5,4 @@ numpy
 scipy
 matplotlib
 sklearn
-torch
+torch == 1.10.2
