@@ -1,8 +1,11 @@
 import streamlit as st
-from Classes import fnp, mop, gradient_methods, LinearRegression
+from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier
 import time
 from numpy import *
 import pandas as pd
+from sklearn.datasets import make_classification, make_blobs, make_gaussian_quantiles
+import torch
+from sklearn.model_selection import train_test_split
 
 def page1():
     st.title('Поиск экстремумов ФНП')
@@ -172,3 +175,87 @@ def page4():
         if plot:
             st.plotly_chart(model.visualize())
 
+
+def page5():
+    st.title('Классификация')
+    st.write('Приложение строит модель на основе линейного классификатора, выводит результаты и график (только для 2-х признаков)')
+    st.write('***')
+    st.sidebar.header('Ввод данных')
+    X,y = [0], [0]
+    chosen_input_format = st.sidebar.selectbox('Выберите способ ввода данных', options = [
+        'Выбрать игрушечный (2 признака) датасет',
+        'Загрузить файл формата csv',
+        'Ввести самоcтоятельно данные'
+    ])
+    if chosen_input_format == 'Выбрать игрушечный (2 признака) датасет':
+        chosen_dataset = st.sidebar.selectbox('Выберите датасет', options=[
+            'Линейно разделимые классы', 'Линейно не разделимые классы'])
+
+        if chosen_dataset == 'Линейно разделимые классы':
+            X, y = make_blobs(n_samples=1000, centers=2, n_features=2, center_box=(-10, 10), random_state=1)
+
+        else:
+            X, y = make_gaussian_quantiles(n_classes=2, n_samples=1000, random_state=1)
+
+    elif chosen_input_format == 'Загрузить файл формата csv':
+        uploaded_data = st.sidebar.file_uploader('Выберите файл формата csv, столбец меток должен быть последним')
+        X = pd.read_csv(uploaded_data).iloc[:,:-1]
+        y = pd.read_csv(uploaded_data).iloc[:, -1]
+
+    elif chosen_input_format == 'Ввести самоcтоятельно данные':
+        X = st.sidebar.text_input('Введите массив X.', 
+        help='Пример для ввода данных для 3-х признаков: [[1,0,3], [2,3,1], [4,2,9], [8,4,9]]')
+        y = st.sidebar.text_input('Введите вектор меток y.', help = 'Пример: [1,-1,1,-1,-1]')
+        X = eval(X)
+        y = eval(y)
+
+    X = torch.tensor(X, dtype = torch.float)
+    y[y == 0] = -1
+    y = torch.tensor(y, dtype= torch.float)
+
+    st.sidebar.header('Параметры модели')
+    chosen_model = st.sidebar.selectbox('Выберите тип модели', options=[
+        'Логистическая регрессия',
+        'Метод опорных векторов',
+    ])
+    if chosen_model == 'Логистическая регрессия':
+        svm = False
+    else:
+        svm = True
+
+    rbf = st.sidebar.selectbox('Применение гауссовской радиально-базисной функции', options = [
+        False,
+        True
+    ])
+
+    if rbf:
+        gamma = st.sidebar.number_input("Множитель радиально-базисной функции",
+         value=1e-3, min_value=1e-5,max_value=1., step=1e-6, format='%.6f')
+    else:
+        gamma = None
+
+    reg = st.sidebar.selectbox('Тип регуляризации', options = [
+        None,
+        'l1',
+        'l2'
+    ])
+
+    if reg is not None:
+        alpha = st.sidebar.number_input('Вес "штрафа" регуляризации')
+    else:
+        alpha = None
+
+    num_epo = st.sidebar.number_input('Кол-во эпох', value=10)
+    num_batch = st.sidebar.number_input('Кол-во батчей в эпохе', value = 50)
+    batch_size = st.sidebar.number_input('Размер батчей', value= 10)
+    lr = st.sidebar.number_input("learning rate", value=1e-3, min_value=1e-5,max_value=1., step=1e-6, format='%.6f')
+
+    if st.sidebar.button('Click'):
+        model = Classifier.Classifier()
+        train_result, test_result = model.fit(X, y, num_epo, lr, num_batch, batch_size, reg, alpha, gamma, svm)
+
+        st.text('Результаты модели на обучающей выборке:\n ' + train_result)
+        st.write('***')
+        st.text('Результаты модели на тестовой выборке:\n ' + test_result)
+        st.write('***')
+        st.plotly_chart(model.plot())
