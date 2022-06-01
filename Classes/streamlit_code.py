@@ -254,6 +254,7 @@ def page5():
         model = Classifier.Classifier()
         train_result, test_result = model.fit(X, y, num_epo, lr, num_batch, batch_size, reg, alpha, gamma, svm)
 
+        st.caption('см. больше информации о метриках снизу: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html#sklearn.metrics.precision_recall_fscore_support')
         st.text('Результаты модели на обучающей выборке:\n ' + train_result)
         st.write('***')
         st.text('Результаты модели на тестовой выборке:\n ' + test_result)

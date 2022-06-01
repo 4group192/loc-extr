@@ -15,8 +15,8 @@ class Classifier(nn.Module):
         super().__init__()
         self.linear = nn.LazyLinear(out_features = 1)
 
-    def forward(self, x):
-        if self.gamma is not None:
+    def forward(self, x, state = None):
+        if self.gamma is not None and state != 'train':
             if len(x.shape) == 1:
                 x = torch.tensor(rbf_kernel(x.reshape(1,-1), Y = self.X))
             else:
@@ -32,6 +32,7 @@ class Classifier(nn.Module):
         self.train()
         self.gamma = gamma
         self.X, self.y = X, y
+        X = torch.tensor(rbf_kernel(self.X, Y = self.X))
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
         for epo in range(1, num_epochs + 1):
@@ -39,7 +40,7 @@ class Classifier(nn.Module):
             for _ in range(num_batches):
                 indexes_batch = torch.randint(low = 0, high = X_train.shape[0] - 1, size = (batch_size,))
                 X_batch, y_batch = X_train[indexes_batch], y_train[indexes_batch]                
-                outputs = self(X_batch)
+                outputs = self(X_batch, state = 'train')
                 if svm == True:
                     loss = torch.mean(torch.relu(1 - y_batch*outputs.reshape(-1)))
                 else:
@@ -55,8 +56,8 @@ class Classifier(nn.Module):
                 losses.append(loss.item())
             print(f'Epo {epo}: {np.mean(losses)}')
         return [
-            classification_report(y_train, torch.sign(self(X_train)).reshape(-1).detach().numpy(), target_names=['-1', '1']),
-            classification_report(y_test, torch.sign(self(X_test)).reshape(-1).detach().numpy(), target_names=['-1', '1'])
+            classification_report(y_train, torch.sign(self(X_train, state = 'train')).reshape(-1).detach().numpy(), target_names=['-1', '1']),
+            classification_report(y_test, torch.sign(self(X_test, state = 'train')).reshape(-1).detach().numpy(), target_names=['-1', '1'])
             ] 
 
     def plot(self):
@@ -75,7 +76,10 @@ class Classifier(nn.Module):
             X1, X2 = np.meshgrid(x1,x2)
             Z = torch.sigmoid(self(torch.tensor(np.c_[X1.ravel(), X2.ravel()]))).reshape(X1.shape).detach().numpy()
 
-            fig.add_trace(go.Contour(x = x1, y = x2, z = Z,  colorscale='ice',  name = 'Probability'))
+            fig.add_trace(go.Contour(x = x1, y = x2, z = Z,  colorscale='ice',  name = 'Probability',contours=dict(start = 0, end = 1, size = 0.5), 
+ showscale = False, 
+ line_width = 4
+ ))
         
         return fig
 
