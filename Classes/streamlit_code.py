@@ -1,5 +1,6 @@
+from unittest import result
 import streamlit as st
-from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier
+from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier, tz5
 import time
 from numpy import *
 import pandas as pd
@@ -176,7 +177,7 @@ def page4():
             st.plotly_chart(model.visualize())
 
 
-def page5():
+def page6():
     st.title('Классификация')
     st.write('Приложение строит модель на основе линейного классификатора, выводит результаты и график (только для 2-х признаков)')
     st.write('***')
@@ -260,3 +261,95 @@ def page5():
         st.text('Результаты модели на тестовой выборке:\n ' + test_result)
         st.write('***')
         st.plotly_chart(model.plot())
+
+def page5():
+    st.title('Метод внутренней точки')
+    st.write('Приложение решает задачу оптимизации с ограничениями')
+    st.write('***')
+    st.sidebar.header('Ввод данных')
+
+    func = st.sidebar.text_input('Целевая функция', value = '5*x1**3+x2**2+2*x1*x2')
+
+    method = st.sidebar.selectbox('Выберите метод', options=[
+        'Метод Ньютона',
+        'Метод логарифмических барьеров',
+        'Прямо-двойственный метод внутренней точки'])
+        
+    if method == 'Метод Ньютона':
+        limit_desc = 'Ограничения типа равенств'
+    else:
+        limit_desc = 'Ограничения типа равенств и неравенств'
+
+    limits = st.sidebar.text_input(
+        limit_desc, 
+        value = '2*x1+x2-2<=100'
+        )
+    limits = limits.split(',')
+ 
+    x0 = st.sidebar.text_input(
+        'Начальная точка',
+        value = '[0, 0]'
+    )
+    x0 = eval(x0)
+
+    if method != 'Метод Ньютона':
+        tol = st.sidebar.number_input(
+            "Точность", 
+            value=1e-3, 
+            step=1e-6, 
+            format='%.6f')
+    if method == 'Метод логарифмических барьеров':
+        max_steps = st.sidebar.number_input(
+            'Макс. кол-во итераций',
+            value = 50
+        )
+    
+    function_dict = {
+        'Метод Ньютона': tz5.Newton,
+        'Метод логарифмических барьеров': tz5.logBarMethod,
+        'Прямо-двойственный метод внутренней точки': tz5.inequality
+    }
+
+    if method == 'Метод Ньютона':
+        result = tz5.Newton(
+            func = func,
+            equality = limits,
+            x0 = x0
+        )
+    
+    elif method == 'Метод логарифмических барьеров':
+        result = tz5.logBarMethod(
+            func = func,
+            restrictions = limits,
+            start_point = x0,
+            max_steps = max_steps,
+            tol = tol
+        )
+    
+    else:
+        result = tz5.inequality(
+            func = func,
+            us = limits,
+            x0 = x0,
+            tol = tol
+        )
+
+
+    if st.sidebar.button('Click'):    
+        st.header('Полученный результат')
+        st.write({
+            'X': result[0],
+            'f(X)': result[1]
+        })
+        st.plotly_chart(tz5.visualize3d(func, reformat_limits(limits), result))
+
+def reformat_limits(restrictions):
+    try:
+        for i in range(len(restrictions)):
+            if '>' in restrictions[i]:
+                restrictions[i] = restrictions[i][:restrictions[i].index('>')].replace(' ', '')
+            else:
+                restrictions[i] = restrictions[i][:restrictions[i].index('<')].replace(' ', '')
+            return restrictions
+    except ValueError:
+        return restrictions
