@@ -277,12 +277,13 @@ def page5():
         
     if method == 'Метод Ньютона':
         limit_desc = 'Ограничения типа равенств'
+        value = '2*x1+x2-2=0'
     else:
         limit_desc = 'Ограничения типа равенств и неравенств'
-
+        value = '2*x1+x2-2<=0'
     limits = st.sidebar.text_input(
         limit_desc, 
-        value = '2*x1+x2-2<=100'
+        value = value
         )
     limits = limits.split(',')
  
@@ -346,10 +347,8 @@ def page5():
 def reformat_limits(restrictions):
     try:
         for i in range(len(restrictions)):
-            if '>' in restrictions[i]:
-                restrictions[i] = restrictions[i][:restrictions[i].index('>')].replace(' ', '')
-            else:
-                restrictions[i] = restrictions[i][:restrictions[i].index('<')].replace(' ', '')
-            return restrictions
+            restrictions[i] = restrictions[i][:restrictions[i].index('=')].replace(' ', '')
+            
+        return restrictions
     except ValueError:
         return restrictions
