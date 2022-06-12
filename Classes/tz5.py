@@ -9,8 +9,8 @@ import plotly.graph_objects as go
 
 def visualize3d(func: str, limits: str, result):
     f = lambda x1, x2: eval(func)
-    x = np.linspace(-5,5)
-    y = np.linspace(-5,5)
+    x = np.linspace(result[0][0]-5,result[0][0] + 5)
+    y = np.linspace(result[0][1]-5,result[0][1] + 5)
     X,Y = np.meshgrid(x,y)
 
     fig = go.Figure()
@@ -33,9 +33,10 @@ def visualize3d(func: str, limits: str, result):
             name = f'g{i}(x1, x2)', 
             colorscale='ice'
             ))
+    
     fig.add_trace(go.Scatter3d(
-        x = [float(result[0][1])], 
-        y = [float(result[0][0])], 
+        x = [float(result[0][0])], 
+        y = [float(result[0][1])], 
         z = [float(result[1])],
         name = 'result'
         ))
@@ -180,7 +181,7 @@ def Newton(func: str, equality: list, x0: tuple, tol=5):
     except SympifyError:
         print('Неверно заданы функции')
     func_c = lambda x: func.subs(dict(zip(func.free_symbols, x)))
-    eq_func = lambda x: [us.subs(dict(zip(us.free_symbols, x))) for us in equality]
+    eq_func = lambda x: [us.subs(dict(zip(func.free_symbols, x))) for us in equality]
     eq_constraints = {'type': 'eq',
                       'fun': eq_func}
     res = minimize(func_c, x0, method='SLSQP', constraints=eq_constraints)
@@ -393,7 +394,7 @@ def inequality(func, us, x0, a= [], b = [], tol=10**-5):
         point, y = search_point(x0, lmbd, mu, var,
                                 left_pain, right_pain, 
                                 n, m, p, Fi, func, tol, A)
-        return np.array(point, dtype = 'float'), y
+        return np.array(point, dtype = 'float'), float(y)
     except:
         str1 = 'К сожалению, решить не вышло, попробуйте изменить входные данные'
         print(str1)
