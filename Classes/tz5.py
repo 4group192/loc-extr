@@ -24,7 +24,7 @@ def visualize3d(func: str, limits: str, result):
         showlegend = True
         ))
     for i in range(len(limits)):
-        limits[i] = limits[i].replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('arcsin', 'np.arcsin').replace('arccos', 'np.arccos').replace('arctan', 'np.arctan').replace('pi', 'np.pi')
+        limits[i] = limits[i].replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('asin', 'np.arcsin').replace('acos', 'np.arccos').replace('atan', 'np.arctan').replace('pi', 'np.pi').replace('atan2', 'np.arctan2')
         limit = lambda x1, x2: eval(limits[i])
         fig.add_trace(go.Surface(
             x = x, 
