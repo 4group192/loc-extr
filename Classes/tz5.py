@@ -8,7 +8,7 @@ from copy import deepcopy
 import plotly.graph_objects as go
 
 def visualize3d(func: str, limits: str, result):
-    func = func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('arcsin', 'np.arcsin').replace('arccos', 'np.arccos').replace('arctan', 'np.arctan').replace('pi', 'np.pi').replace('arctan2', 'np.arctan2')
+    func = func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('asin', 'np.arcsin').replace('acos', 'np.arccos').replace('atan', 'np.arctan').replace('pi', 'np.pi').replace('atan2', 'np.arctan2')
     f = lambda x1, x2: eval(func)
     x = np.linspace(result[0][0]-5,result[0][0] + 5)
     y = np.linspace(result[0][1]-5,result[0][1] + 5)
