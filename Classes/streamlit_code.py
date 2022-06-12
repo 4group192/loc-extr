@@ -348,7 +348,7 @@ def reformat_limits(restrictions):
     try:
         for i in range(len(restrictions)):
             restrictions[i] = restrictions[i][:restrictions[i].index('=')].replace(' ', '')
-            restrictions[i] = restrictions[i].replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp')
+            restrictions[i] = restrictions[i]
         return restrictions
     except ValueError:
         return restrictions
