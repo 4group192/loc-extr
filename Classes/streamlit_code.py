@@ -347,8 +347,11 @@ def page5():
 def reformat_limits(restrictions):
     try:
         for i in range(len(restrictions)):
-            restrictions[i] = restrictions[i][:restrictions[i].index('=')].replace(' ', '')
+            if '<' in restrictions[i]:
+                restrictions[i] = restrictions[i][:restrictions[i].index('<')].replace(' ', '')
+            else:
+                restrictions[i] = restrictions[i][:restrictions[i].index('=')].replace(' ', '')
             restrictions[i] = restrictions[i]
         return restrictions
-    except ValueError:
+    except ValueError as err:
         return restrictions
