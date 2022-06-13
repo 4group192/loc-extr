@@ -200,8 +200,9 @@ def page6():
 
     elif chosen_input_format == 'Загрузить файл формата csv':
         uploaded_data = st.sidebar.file_uploader('Выберите файл формата csv, столбец меток должен быть последним')
-        X = pd.read_csv(uploaded_data).iloc[:,:-1]
-        y = pd.read_csv(uploaded_data).iloc[:, -1]
+        df = pd.read_csv(uploaded_data)
+        X = df.iloc[:,:-1].values
+        y = df.iloc[:, -1].values
 
     elif chosen_input_format == 'Ввести самоcтоятельно данные':
         X = st.sidebar.text_input('Введите массив X.', 
