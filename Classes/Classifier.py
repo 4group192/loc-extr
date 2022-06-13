@@ -32,7 +32,8 @@ class Classifier(nn.Module):
         self.train()
         self.gamma = gamma
         self.X, self.y = X, y
-        X = torch.tensor(rbf_kernel(self.X, Y = self.X))
+        if self.gamma is not None:
+            X = torch.tensor(rbf_kernel(self.X, Y = self.X))
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
         for epo in range(1, num_epochs + 1):
