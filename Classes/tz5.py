@@ -180,8 +180,9 @@ def Newton(func: str, equality: list, x0: tuple, tol=5):
     try:
         func = sympify(func)
         equality = [sympify(eq.partition('=')[0]) for eq in equality]
-    except SympifyError:
+    except SympifyError as err:
         print('Неверно заданы функции')
+        print(err)
     func_c = lambda x: func.subs(dict(zip(func.free_symbols, x)))
     eq_func = lambda x: [us.subs(dict(zip(func.free_symbols, x))) for us in equality]
     eq_constraints = {'type': 'eq',
