@@ -1,6 +1,6 @@
 from unittest import result
 import streamlit as st
-from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier, tz5
+from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier, b_and_b, gamori, tz5
 import time
 from numpy import *
 import pandas as pd
@@ -179,7 +179,7 @@ def page4():
 
 def page6():
     st.title('Классификация')
-    st.write('Приложение строит модель на основе линейного классификатора, выводит результаты и график (только для 2-х признаков)')
+    st.write('Приложение решает задачу бинарной классификации с помощью линейного классификатора, выводит результаты и график (только для 2-х признаков)')
     st.write('***')
     st.sidebar.header('Ввод данных')
     X,y = [0], [0]
@@ -200,8 +200,9 @@ def page6():
 
     elif chosen_input_format == 'Загрузить файл формата csv':
         uploaded_data = st.sidebar.file_uploader('Выберите файл формата csv, столбец меток должен быть последним')
-        X = pd.read_csv(uploaded_data).iloc[:,:-1]
-        y = pd.read_csv(uploaded_data).iloc[:, -1]
+        df = pd.read_csv(uploaded_data)
+        X = df.iloc[:,:-1].values
+        y = df.iloc[:, -1].values
 
     elif chosen_input_format == 'Ввести самоcтоятельно данные':
         X = st.sidebar.text_input('Введите массив X.', 
@@ -344,6 +345,37 @@ def page5():
         })
         st.plotly_chart(tz5.visualize3d(func, reformat_limits(limits), result))
 
+def page7():
+    st.title('Метод секущих плоскостей')
+    st.write('Приложение находит целочисленное решение задачи линейного программирования')
+    st.write('***')
+    st.sidebar.header('Ввод данных')
+
+    method = st.sidebar.selectbox('Метод', ['Метод Гомори', 'Метод ветвей и границ'])
+    method_dict = {
+        'Метод Гомори': gamori.main, 
+        'Метод ветвей и границ': b_and_b.bb
+    }
+    c = st.sidebar.text_input(
+        'Коэффициенты заданной функции', 
+        help = 'Пример: [2,3] <-> 2x1 + 3x2',
+        value='[2,3]')
+    a = st.sidebar.text_input(
+        'Коэффициенты заданных ограничений', 
+        help = 'Пример: [[2, 1],[1, 4]] <-> g1 = 2x1 + x2, g2 = x1 + 4x2',
+        value='[[2,1], [1,4]]'
+        )
+    b = st.sidebar.text_input(
+        'Коэффициенты свободных членов ограничений', 
+        help = 'Пример: [10, 13] <-> g1 = 10, g2 = 13',
+        value = '[10, 13]')
+
+    c, a, b = [array(eval(list)) for list in [c,a,b]]
+
+    result = method_dict[method](c,a,b)
+    if st.sidebar.button('Click'):
+        st.write(result)
+        st.plotly_chart(gamori.visualize(c,a,b,result))
 def reformat_limits(restrictions):
     try:
         for i in range(len(restrictions)):
