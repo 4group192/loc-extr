@@ -373,8 +373,9 @@ def page7():
     c, a, b = [array(eval(list)) for list in [c,a,b]]
 
     result = method_dict[method](c,a,b)
-    st.write(result)
-    st.plotly_chart(gamori.visualize(c,a,b,result))
+    if st.sidebar.button('Click'):
+        st.write(result)
+        st.plotly_chart(gamori.visualize(c,a,b,result))
 def reformat_limits(restrictions):
     try:
         for i in range(len(restrictions)):
