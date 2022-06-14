@@ -2,6 +2,7 @@ import numpy as np
 from copy import deepcopy
 from itertools import product
 import time
+import plotly.graph_objects as go
 
 MAX_MODE = 'MAX'  # режим максимизации
 MIN_MODE = 'MIN'  # режим минимизации
@@ -416,3 +417,18 @@ def main(c,a,b):
     print("Solve with Gomory method:")
     solves = simplex.solve_integer(True)
     return simplex.print_best_solve(solves)
+
+
+def visualize(c, a, b, result):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]]))
+    for i in range(len(a)):
+        g = lambda x1: (b[i] - a[i][0]*x1)/a[i][1]
+        x = np.linspace(0, result[0][0] + 2)
+        fig.add_trace(go.Scatter(x = x , y = g(x), mode = 'lines'))
+    X, Y = np.meshgrid(x, x)
+    Z = c[0]*X + c[1]*Y
+    fig.add_trace(go.Contour(x = x, y = x, z = Z,  colorscale='ice',  name = 'Probability', 
+ showscale = True
+ ))
+    return fig
