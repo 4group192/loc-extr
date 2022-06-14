@@ -412,7 +412,7 @@ def main(c,a,b):
     """
 
 
-    simplex = SimplexMethod(c, a, b, MAX_MODE)
+    simplex = SimplexMethod(c, a, b, MIN_MODE)
 
     print("Solve with Gomory method:")
     solves = simplex.solve_integer(True)

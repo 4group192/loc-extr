@@ -392,7 +392,7 @@ def bb(c,a,b):
     Найденную координату и значение функции в этой координате.
     """
 
-    simplex = SimplexMethod(c, a, b, MAX_MODE)
+    simplex = SimplexMethod(c, a, b, MIN_MODE)
 
     simplex.solve_integer_bruteforce()
 
