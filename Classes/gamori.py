@@ -421,14 +421,22 @@ def main(c,a,b):
 
 def visualize(c, a, b, result):
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]]))
+    fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]], showlegend=False, marker = dict(size = 10, color = [0])))
+    x2min = np.inf
+    x2max = -np.inf
     for i in range(len(a)):
         g = lambda x1: (b[i] - a[i][0]*x1)/a[i][1]
         x = np.linspace(0, result[0][0] + 2)
-        fig.add_trace(go.Scatter(x = x , y = g(x), mode = 'lines'))
-    X, Y = np.meshgrid(x, x)
+        x2 = g(x)
+        if np.min(x2) < x2min:
+            x2min = np.min(x2)
+        if np.max(x2) > x2max:
+            x2max = np.max(x2)
+        fig.add_trace(go.Scatter(x = x , y = x2, mode = 'lines', showlegend=False))
+    x2 = np.linspace(x2min, x2max)
+    X, Y = np.meshgrid(x, x2)
     Z = c[0]*X + c[1]*Y
-    fig.add_trace(go.Contour(x = x, y = x, z = Z,  colorscale='ice',  name = 'Probability', 
+    fig.add_trace(go.Contour(x = x, y = x2, z = Z,  colorscale = 'ice',name = 'Probability', 
  showscale = True
  ))
     return fig
