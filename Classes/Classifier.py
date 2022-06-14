@@ -11,6 +11,25 @@ from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.model_selection import train_test_split
 
 class Classifier(nn.Module):
+    """
+    Логистическая регрессия и метод опорных векторов на основе torch
+
+    Methods
+    -------
+    fit(self)
+        Обучает модель
+        Returns: classification_report на обучающей и тестовой выборке
+        
+    forward(self, X: list or array, state)
+        В данной функции мы определяем как модель будет преобразовывать входные данные
+        Параметр state нужен для использования RBF к данным вне процесса обучения
+        Returns: array
+
+    plot(self)
+        Построение графика рассеивания (только для 2-х признаков)
+        Returns: plotly.graphic_objects.Figure
+
+"""
     def __init__(self):
         super().__init__()
         self.linear = nn.LazyLinear(out_features = 1)
