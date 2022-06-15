@@ -377,7 +377,7 @@ def page5():
 
     st.sidebar.header('Ввод данных')
 
-    func = st.sidebar.text_input('Целевая функция', value = '5*x1**3+x2**2+2*x1*x2')
+    func = st.sidebar.text_input('Целевая функция', value = '2*x1 + 3*x2')
 
     method = st.sidebar.selectbox('Выберите метод', options=[
         'Метод Ньютона',
@@ -386,10 +386,10 @@ def page5():
         
     if method == 'Метод Ньютона':
         limit_desc = 'Ограничения типа равенств'
-        value = '2*x1+x2-2=0'
+        value = '2*x1 - x2 - 10, x1 + 4*x2 - 13'
     else:
         limit_desc = 'Ограничения типа равенств и неравенств'
-        value = '2*x1+x2-2<=0'
+        value = '2*x1 - x2 - 10, x1 + 4*x2 - 13'
     limits = st.sidebar.text_input(
         limit_desc, 
         value = value
