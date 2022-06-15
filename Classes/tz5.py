@@ -16,7 +16,7 @@ def visualize(func, limits, result):
         a.append(get_coeffs(i))
         b.append(get_b(i))
     
-
+    print(c,a,b)
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]], showlegend=False, marker = dict(size = 10, color = [0])))
     x2min = 0
@@ -110,11 +110,7 @@ def logBarMethod(func: str, restrictions: list, start_point: tuple = tuple(), to
     '''
     tao = 1
     v = 10
-    for i in range(len(restrictions)):
-        if '>' in restrictions[i]:
-            restrictions[i] = restrictions[i][:restrictions[i].index('>')].replace(' ', '')
-        else:
-            restrictions[i] = restrictions[i][:restrictions[i].index('<')].replace(' ', '')
+    
 
     phi = f'{tao}*({func})'
     for exp in restrictions:
