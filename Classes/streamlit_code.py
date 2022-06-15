@@ -452,6 +452,7 @@ def page5():
             'f(X)': result[1]
         })
         st.plotly_chart(tz5.visualize3d(func, reformat_limits(limits), result))
+        st.plotly_chart(tz5.visualize(func, reformat_limits(limits), result))
 
 def page7():
     st.title('Метод секущих плоскостей')
@@ -475,7 +476,7 @@ def page7():
     st.sidebar.header('Ввод данных')
 
     method = st.sidebar.selectbox('Метод', ['Метод Гомори', 'Метод ветвей и границ'])
-    mode = st.sidebar.selectbox("Тип задачи", ['MIN', 'MAX'])
+    mode = st.sidebar.selectbox("Тип задачи", ['MAX', 'MIN'])
     method_dict = {
         'Метод Гомори': gamori.main, 
         'Метод ветвей и границ': b_and_b.bb

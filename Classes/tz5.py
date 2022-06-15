@@ -6,8 +6,17 @@ from sympy import *
 from sympy.core.numbers import NaN
 from copy import deepcopy
 import plotly.graph_objects as go
+import re 
+def visualize(func, limits, result):
 
-def visualize(c, a, b, result):
+    c  =get_coeffs(func)
+    a = list()
+    b = list()
+    for i in limits:
+        a.append(get_coeffs(i))
+        b.append(get_b(i))
+    
+
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]], showlegend=False, marker = dict(size = 10, color = [0])))
     x2min = 0
@@ -27,6 +36,7 @@ def visualize(c, a, b, result):
     fig.add_trace(go.Contour(x = x, y = x2, z = Z,  colorscale = 'ice',name = 'Probability', 
  showscale = True
  ))
+    return fig    
 
 def visualize3d(func: str, limits: str, result):
     func = func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('asin', 'np.arcsin').replace('acos', 'np.arccos').replace('atan', 'np.arctan').replace('pi', 'np.pi').replace('atan2', 'np.arctan2')
@@ -438,6 +448,50 @@ def inequality(func, us, x0, a= [], b = [], tol=10**-5):
         print(str1)
         raise
 
+
+def get_coeffs(func, limits = '2*x1 - x2 - 10,  x1 + 4*x2 - 13'):
+    symbs = re.findall('[0-9.x+-]+', func)
+    c = list()
+    index = symbs.index('x1')
+
+    if index == 0:
+        c.append(1.0)
+    
+    else:
+        if index == 1:
+            if symbs[index - 1] == '-':
+                c.append(-1.0)
+            else:
+                c.append(float(symbs[index - 1]))
+        else:
+            c.append(-float(symbs[index - 1]))
+
+    index = symbs.index('x2')
+
+    if symbs[index - 1] == '-':
+        c.append(-1.0)
+    
+    elif symbs[index - 1] == '+':
+        c.append(1.0)
+
+    elif symbs[index - 2] == '+':
+        c.append(float(symbs[index - 1]))
+    
+    else:
+        c.append(-float(symbs[index - 1]))
+
+    
+    return c
+def get_b(limits):
+    symbs = re.findall('[0-9.x+-]+', limits)
+    if symbs[-1] not in ['x1', 'x2']:
+        if symbs[-2] == '-':
+            b = float(symbs[-1])
+        else:
+            b = -float(symbs[-1])
+    else:
+        b = 0
+    return b 
 if __name__ == '__main__':
     func = '5*x1**3+x2**2+2*x1*x2'
     limits =  ['2*x1+x2-2<=100']
@@ -445,3 +499,5 @@ if __name__ == '__main__':
     result = inequality(func, limits, [0,0])
     print(result)
     visualize3d(func, ['2*x1+x2-2'], result).show()
+
+    
