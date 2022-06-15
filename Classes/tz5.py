@@ -7,11 +7,32 @@ from sympy.core.numbers import NaN
 from copy import deepcopy
 import plotly.graph_objects as go
 
+def visualize(c, a, b, result):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]], showlegend=False, marker = dict(size = 10, color = [0])))
+    x2min = 0
+    x2max = -np.inf
+    for i in range(len(a)):
+        g = lambda x1: (b[i] - a[i][0]*x1)/a[i][1]
+        x = np.linspace(0, result[0][0] + 2)
+        x2 = g(x)
+        if np.min(x2) < x2min:
+            x2min = np.min(x2)
+        if np.max(x2) > x2max:
+            x2max = np.max(x2)
+        fig.add_trace(go.Scatter(x = x , y = x2, mode = 'lines', showlegend=False))
+    x2 = np.linspace(x2min, x2max)
+    X, Y = np.meshgrid(x, x2)
+    Z = c[0]*X + c[1]*Y
+    fig.add_trace(go.Contour(x = x, y = x2, z = Z,  colorscale = 'ice',name = 'Probability', 
+ showscale = True
+ ))
+
 def visualize3d(func: str, limits: str, result):
     func = func.replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('asin', 'np.arcsin').replace('acos', 'np.arccos').replace('atan', 'np.arctan').replace('pi', 'np.pi').replace('atan2', 'np.arctan2')
     f = lambda x1, x2: eval(func)
-    x = np.linspace(result[0][0]-5,result[0][0] + 5)
-    y = np.linspace(result[0][1]-5,result[0][1] + 5)
+    x = np.linspace(0,result[0][0] + 5)
+    y = np.linspace(0,result[0][1] + 5)
     X,Y = np.meshgrid(x,y)
 
     fig = go.Figure()
@@ -23,6 +44,16 @@ def visualize3d(func: str, limits: str, result):
         showscale = False,
         showlegend = True
         ))
+
+    fig.add_trace(go.Surface(
+        x = x,
+        y = y,
+        z = np.zeros_like(X*Y),
+        showlegend = True,
+        showscale = False,
+        colorscale = 'tropic'
+    ))
+
     for i in range(len(limits)):
         limits[i] = limits[i].replace('sin', 'np.sin').replace('cos', 'np.cos').replace('exp', 'np.exp').replace('tg', 'np.tan').replace('asin', 'np.arcsin').replace('acos', 'np.arccos').replace('atan', 'np.arctan').replace('pi', 'np.pi').replace('atan2', 'np.arctan2')
         limit = lambda x1, x2: eval(limits[i])
