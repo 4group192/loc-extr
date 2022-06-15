@@ -374,7 +374,7 @@ class SimplexMethod:
             else:
                 print(self.indent, ' + '.join([self.print_coef(ai, i) for i, ai in enumerate(row[:self.main_variables_count]) if ai != 0]), '<=', row[-1])
 
-def bb(c,a,b):
+def bb(c,a,b, mode = "MIN"):
     """
     Функции для считывания введенной функции и ограничений и решающая задачу методом ветвей и границ.
     
@@ -386,13 +386,14 @@ def bb(c,a,b):
     Коэффициенты заданных ограничений
     b: numpy.array
     Коэффициенты свободных членов ограничений
-    
+    mode: str
+    {"MIN", "MAX"}
     Returns
     -----------
     Найденную координату и значение функции в этой координате.
     """
 
-    simplex = SimplexMethod(c, a, b, MIN_MODE)
+    simplex = SimplexMethod(c, a, b, mode)
 
     simplex.solve_integer_bruteforce()
 

@@ -393,7 +393,7 @@ class SimplexMethod:
         return s
 
 
-def main(c,a,b):
+def main(c,a,b, mode = "MIN"):
     """
     Функции для считывания введенной функции и ограничений и решающая задачу методом Гомори.
     Parameters
@@ -404,7 +404,8 @@ def main(c,a,b):
     Коэффициенты заданных ограничений
     b: numpy.array
     Коэффициенты свободных членов ограничений
-    
+    mode: str
+    {"MIN", "MAX"}
     Returns
     -----------
     Найденную координату и значение функции в этой координате.
@@ -412,7 +413,7 @@ def main(c,a,b):
     """
 
 
-    simplex = SimplexMethod(c, a, b, MIN_MODE)
+    simplex = SimplexMethod(c, a, b, mode)
 
     print("Solve with Gomory method:")
     solves = simplex.solve_integer(True)
@@ -422,7 +423,7 @@ def main(c,a,b):
 def visualize(c, a, b, result):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=[result[0][0]],y=[result[0][1]], showlegend=False, marker = dict(size = 10, color = [0])))
-    x2min = np.inf
+    x2min = 0
     x2max = -np.inf
     for i in range(len(a)):
         g = lambda x1: (b[i] - a[i][0]*x1)/a[i][1]
