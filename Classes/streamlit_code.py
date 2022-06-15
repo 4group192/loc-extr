@@ -363,6 +363,8 @@ def page5():
 
     if st.checkbox('Показать инструкцию', value = True):
         st.header('Ввод данных')
+        st.write("""Примечания: многочлены нужно разделять пробелами и коэффиценты следует писать перед переменными
+        : верно - 2*x1 - 3*x2, не верно - x1*3-x2*2""")
         st.write('Для работы приложения нужно ввести входные данные слева в боковой панели')
         st.write("""1. Ввести нужную функцию в стиле numpy в поле “Введите целевую функцию”.
         Можно использовать функции, реализованные в numpy: np.sin(x1) + np.exp(x2)""")
@@ -373,7 +375,9 @@ def page5():
 
         st.header('Интерпретация графиков')
         st.write("""1. На экране отобразятся оптимальная точка и значение функции в ней""")
-        st.write("""2. Если кол-во переменных = 2, будет построен графики функции, ограничений и оптимальная точка""")
+        st.write("""2. Если кол-во переменных = 2, будет построен 3d график, на котором изображены целевая функция,
+         ограничения, нулевая плоскость и точка. Для ограничения вида равенств: Точка должна находиться на пересечении трех плоскостей.
+         Второй график является интерпретацией первого в меньшей размерности""")
 
     st.sidebar.header('Ввод данных')
 
@@ -451,8 +455,8 @@ def page5():
             'X': result[0],
             'f(X)': result[1]
         })
-        st.plotly_chart(tz5.visualize3d(func, reformat_limits(limits), result))
-        st.plotly_chart(tz5.visualize(func, reformat_limits(limits), result))
+        st.plotly_chart(tz5.visualize3d(func, limits, result))
+        st.plotly_chart(tz5.visualize(func, limits, result))
 
 def page7():
     st.title('Метод секущих плоскостей')
@@ -501,14 +505,3 @@ def page7():
         result = method_dict[method](c,a,b, mode)
         st.write(result)
         st.plotly_chart(gamori.visualize(c,a,b,result))
-def reformat_limits(restrictions):
-    try:
-        for i in range(len(restrictions)):
-            if '<' in restrictions[i]:
-                restrictions[i] = restrictions[i][:restrictions[i].index('<')].replace(' ', '')
-            else:
-                restrictions[i] = restrictions[i][:restrictions[i].index('=')].replace(' ', '')
-            restrictions[i] = restrictions[i]
-        return restrictions
-    except ValueError as err:
-        return restrictions
