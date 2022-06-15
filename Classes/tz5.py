@@ -29,7 +29,7 @@ def visualize3d(func: str, limits: str, result):
         fig.add_trace(go.Surface(
             x = x, 
             y = y, 
-            z = limit(Y,X), 
+            z = limit(X,Y), 
             showscale=False, 
             showlegend=True, 
             name = f'g{i}(x1, x2)', 
@@ -42,6 +42,10 @@ def visualize3d(func: str, limits: str, result):
         z = [float(result[1])],
         name = 'result'
         ))
+    
+    fig.update_layout(
+                  width=800, height=800,
+                  margin=dict(l=65, r=50, b=65, t=90))
     return fig
 
 def logBarMethod(func: str, restrictions: list, start_point: tuple = tuple(), tol:float = 10**(-6), max_steps: int=500):
