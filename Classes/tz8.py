@@ -67,7 +67,7 @@ def simulated_annealing(objective, start_point, n_iterations, step_size, temp):
         if diff < 0 or rand() < metropolis:
 			# store the new current point
             curr, curr_eval = candidate, candidate_eval
-        return [best, best_eval, scores]
+    return [best, best_eval, scores]
 
 
 def visualize(scores):
