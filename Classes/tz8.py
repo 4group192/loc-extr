@@ -113,7 +113,7 @@ def selection(pop, scores, k=3):
 		# check if better (e.g. perform a tournament)
         if scores[ix] < scores[selection_ix]:
             selection_ix = ix
-        return pop[selection_ix]
+    return pop[selection_ix]
  
 # crossover two parents to create two children
 def crossover(p1, p2, r_cross):
