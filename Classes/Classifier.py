@@ -18,6 +18,17 @@ class Classifier(nn.Module):
     -------
     fit(self)
         Обучает модель
+        Parameteres:
+            X: torch.Tensor - Матрица признаков;
+            y: torch.Tensor - Вектор меток классов;
+            num_epo: int - Кол-во эпох;
+            lr: float - скорость обучения;
+            num_batch: Кол-во батчей/подвыборок
+            batch_size: Размер батчей;
+            reg: str - Тип регуляризации;
+            alpha: Коэффицент регуляризации;
+            gamma: float - Коэффицент rbf, если None, то rbf не используется
+            svm: Bool - использование метода опорных векторов
         Returns: classification_report на обучающей и тестовой выборке
         
     forward(self, X: list or array, state)
