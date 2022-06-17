@@ -121,21 +121,3 @@ def genetic_algorithm(objective, bounds, n_bits, n_iter, n_pop, r_cross, r_mut):
                 children.append(c)
         pop = children
     return [best, best_eval, results]
-
-# define range for input
-bounds = [[30, 40]]
-# define the total iterations
-n_iter = 100
-# bits per variable
-# define the population size
-n_pop = 100
-# crossover rate
-r_cross = 0.9
-# mutation rate
-r_mut = 1.0 / (float(16) * len(bounds))
-# perform the genetic algorithm search
-best, score, scores = genetic_algorithm(objective, bounds, 16, n_iter, n_pop, r_cross, r_mut)
-print('Done!')
-decoded = decode(bounds, 16, best)
-print('f(%s) = %f' % (decoded, score))
-visualize(scores).show()
