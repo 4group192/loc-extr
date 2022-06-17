@@ -1,6 +1,6 @@
 from unittest import result
 import streamlit as st
-from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier, b_and_b, gamori, tz5
+from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier, b_and_b, gamori, tz5, tz8
 import time
 from numpy import *
 import pandas as pd
@@ -505,3 +505,62 @@ def page7():
         result = method_dict[method](c,a,b, mode)
         st.write(result)
         st.plotly_chart(gamori.visualize(c,a,b,result))
+
+def page8():
+    st.title('Методы стохастической оптимизации')
+    st.write('Приложение находит решает задачу оптимизации различными стохастическими методами')
+    st.write('***')
+    st.sidebar.header('Ввод данных')
+
+    method = st.sidebar.selectbox('Метод', ['Метод имитации отжига', 'Генетического алгоритм'])
+    method_dict = {
+        'Метод имитации отжига': tz8.simulated_annealing, 
+        'Генетического алгоритм': tz8.genetic_algorithm
+    }
+    func = st.sidebar.text_input(
+        'Целевая функция', 
+        value = 'x[0]**2.0',
+        help = 'Объявляйте переменные как элементы списка: x1 -> x[0], x2 -> x[1]')
+
+    def objective(x):
+        return eval(func)
+
+    n_iterations = st.sidebar.number_input(
+        'Кол-во итераций', 
+        value = 10
+        )
+
+    if method == 'Метод имитации отжига':
+        start_point = st.sidebar.text_input(
+            'Начальная точка', 
+            value = '[0,0]'
+            )
+
+        step_size = st.sidebar.number_input(
+            'Размер шага',
+            value = 0.1
+        )
+
+        temp = st.sidebar.number_input(
+        '   Начальная температура',
+            value = 10
+        )
+
+        best, score, scores = tz8.simulated_annealing(objective, eval(start_point), n_iterations, step_size, temp)
+
+    elif method == 'Генетического алгоритм':
+        bounds = eval(st.sidebar.text_input(
+            'Области нахождения минимума',
+            value = '[[-5, 5]]'
+        ))
+
+        n_pop = st.sidebar.number_input(
+            'Кол-во популяций',
+            value = 100
+        )
+
+        best, score, scores = tz8.genetic_algorithm(objective, bounds, 16, n_iterations, n_pop, 0.9, 1.0 / (float(16) * len(bounds)))
+        best = tz8.decode(bounds, 16, best)
+    if st.sidebar.button('Click'):
+        st.write('f(%s) = %f' % (best, score))
+        st.plotly_chart(tz8.visualize(scores))
