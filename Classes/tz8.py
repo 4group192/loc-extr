@@ -1,4 +1,3 @@
-from catboost import train
 from numpy import asarray
 from numpy import exp
 from numpy.random import randn, rand, seed, randint
