@@ -513,10 +513,7 @@ def page8():
     st.sidebar.header('Ввод данных')
 
     method = st.sidebar.selectbox('Метод', ['Метод имитации отжига', 'Генетического алгоритм'])
-    method_dict = {
-        'Метод имитации отжига': tz8.simulated_annealing, 
-        'Генетического алгоритм': tz8.genetic_algorithm
-    }
+    
     func = st.sidebar.text_input(
         'Целевая функция', 
         value = 'x[0]**2.0',
