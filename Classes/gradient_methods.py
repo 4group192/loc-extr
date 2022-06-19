@@ -1,5 +1,4 @@
 #Градиентные методы
-from sqlite3 import DataError
 import numpy as np
 import scipy
 from scipy.optimize import minimize_scalar, minimize, approx_fprime

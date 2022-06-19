@@ -1,7 +1,7 @@
-from unittest import result
 import streamlit as st
 from Classes import fnp, mop, gradient_methods, LinearRegression, Classifier, b_and_b, gamori, tz5, tz8
 import time
+import numpy as np
 from numpy import *
 import pandas as pd
 from sklearn.datasets import make_classification, make_blobs, make_gaussian_quantiles
